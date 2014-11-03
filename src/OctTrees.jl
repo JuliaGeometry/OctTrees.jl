@@ -34,7 +34,13 @@ function _divide!{T<:AbstractPoint2D}(q::QuadTree{T})
     q.lxhy = QuadTree(q.minx, q.midy, q.midx, q.maxy, T)
     q.hxly = QuadTree(q.midx, q.miny, q.maxx, q.midy, T)
     q.hxhy = QuadTree(q.midx, q.midy, q.maxx, q.maxy, T)
+    if !q.is_empty
+        const sq = _getsubquad(q, q.point)
+        sq.is_empty = false
+        sq.point = q.point
+    end
     q.is_divided = true
+    q.is_empty = true
     q
 end
 
