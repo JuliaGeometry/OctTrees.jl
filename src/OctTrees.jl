@@ -2,7 +2,8 @@ module OctTrees
 
 export
 	QuadTree,
-	insert!
+	insert!,
+	Point
 
 using GeometricalPredicates
 
@@ -30,10 +31,10 @@ QuadTree{T<:AbstractPoint2D}(::Type{T}) = QuadTree(0., 1., 0., 1., T)
 QuadTree() = QuadTree(Point2D);
 
 function _divide!{T<:AbstractPoint2D}(q::QuadTree{T})
-    q.lxly = QuadTree(q.minx, q.miny, q.midx, q.midy, T)
-    q.lxhy = QuadTree(q.minx, q.midy, q.midx, q.maxy, T)
-    q.hxly = QuadTree(q.midx, q.miny, q.maxx, q.midy, T)
-    q.hxhy = QuadTree(q.midx, q.midy, q.maxx, q.maxy, T)
+    q.lxly = QuadTree(q.minx, q.midx, q.miny, q.midy, T)
+    q.lxhy = QuadTree(q.minx, q.midx, q.midy, q.maxy, T)
+    q.hxly = QuadTree(q.midx, q.maxx, q.miny, q.midy, T)
+    q.hxhy = QuadTree(q.midx, q.maxx, q.midy, q.maxy, T)
     if !q.is_empty
         const sq = _getsubquad(q, q.point)
         sq.is_empty = false
