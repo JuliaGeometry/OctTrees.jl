@@ -15,11 +15,11 @@ type QuadTree{T<:AbstractPoint2D}
     midy::Float64
     is_empty::Bool
     is_divided::Bool
+    point::T
     lxly::QuadTree{T}
     lxhy::QuadTree{T}
     hxly::QuadTree{T}
     hxhy::QuadTree{T}
-    point::T
     function QuadTree(minx::Float64, maxx::Float64, miny::Float64, maxy::Float64)
         new(minx, maxx, miny, maxy, (minx+maxx)/2, (miny+maxy)/2, true, false)
     end
