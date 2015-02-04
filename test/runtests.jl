@@ -1,7 +1,10 @@
 using OctTrees
+import OctTrees:modify
+using GeometricalPredicates
+import GeometricalPredicates:getx, gety
 using Base.Test
 
-q=QuadTree()
+q=QuadTree(100)
 
 insert!(q, Point(0.1, 0.1))
 insert!(q, Point(0.9, 0.9))
@@ -45,5 +48,45 @@ function insert_unsorted_array(pa::Array{Point2D,1}, q::QuadTree)
 		insert!(q, p)
 	end
 end
-
+q=QuadTree(100)
 @time insert_unsorted_array(pa,q)
+
+# a massive particle
+type Particle <: AbstractPoint2D
+	_x::Float64
+	_y::Float64
+	_m::Float64
+	Particle(x,y,m) = new(x,y,m)
+end
+Particle(x::Float64, y::Float64) = Particle(x, y, 1.)
+Particle() = Particle(0., 0., 0.)
+getx(p::Particle) = p._x
+gety(p::Particle) = p._y
+
+q=QuadTree(Particle; n=100)
+
+function modify(q::QuadTreeNode{Particle}, p::Particle)
+	total_mass = q.point._m + p._m
+	q.point._x = (q.point._x*q.point._m + p._x)/total_mass
+	q.point._y = (q.point._y*q.point._m + p._y)/total_mass
+	q.point._m = total_mass
+end
+
+@test q.head.is_empty == true
+
+insert!(q, Particle(0.1, 0.1), Modify)
+
+@test q.head.is_empty == false
+@test q.head.point._m == 1.0
+@test q.head.point._x == 0.1
+@test q.head.point._y == 0.1
+
+insert!(q, Particle(0.9, 0.9), Modify)
+
+@test q.head.is_empty == true
+@test q.head.point._m == 2.0
+@test q.head.point._x == (0.1+0.9)/2
+@test q.head.point._y == (0.1+0.9)/2
+
+
+

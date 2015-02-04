@@ -4,7 +4,10 @@ export
 	QuadTree,
 	insert!,
 	Point,
-    Point2D
+    Point2D,
+    Modify,
+    modify,
+    QuadTreeNode
 
 using GeometricalPredicates
 
@@ -23,7 +26,7 @@ type QuadTreeNode{T<:AbstractPoint2D}
     hxly::QuadTreeNode{T}
     hxhy::QuadTreeNode{T}
     QuadTreeNode(minx::Float64, maxx::Float64, miny::Float64, maxy::Float64) = 
-        new(minx, maxx, miny, maxy, (minx+maxx)/2, (miny+maxy)/2, true, false)
+        new(minx, maxx, miny, maxy, (minx+maxx)/2, (miny+maxy)/2, true, false, T())
 end
 
 QuadTreeNode{T<:AbstractPoint2D}(minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, ::Type{T}) = QuadTreeNode{T}(minx, maxx, miny, maxy)
@@ -34,20 +37,21 @@ type QuadTree{T<:AbstractPoint2D}
 	head::QuadTreeNode{T}
 	number_of_nodes_used::Int64
 	nodes::Array{QuadTreeNode, 1}
-    function QuadTree(minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, n::Int64=1000)
+    function QuadTree(minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, n::Int64=100000)
     	nodes = QuadTreeNode[QuadTreeNode(minx, maxx, miny, maxy, T) for i in 1:n]
         new(nodes[1], 1, nodes)
     end
 end
 
-QuadTree{T<:AbstractPoint2D}(minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, ::Type{T}) = QuadTree{T}(minx, maxx, miny, maxy)
-QuadTree{T<:AbstractPoint2D}(::Type{T}) = QuadTree(0., 1., 0., 1., T)
-QuadTree() = QuadTree(Point2D);
+QuadTree{T<:AbstractPoint2D}(minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, ::Type{T};n=1000) = QuadTree{T}(minx, maxx, miny, maxy, n)
+QuadTree{T<:AbstractPoint2D}(::Type{T};n=10000) = QuadTree(0., 1., 0., 1., T; n=n)
+QuadTree(n::Int64) = QuadTree(Point2D;n=n)
+QuadTree() = QuadTree(Point2D)
 
 function _divide!{T<:AbstractPoint2D}(h::QuadTree{T}, q::QuadTreeNode{T})
     if length(h.nodes) - h.number_of_nodes_used < 4
     	new_size = length(h.nodes)+length(h.nodes) >>> 1
-    	sizehint(h.nodes, new_size)
+    	sizehint!(h.nodes, new_size)
     	for i in 1:(new_size-length(h.nodes))
     		push!(h.nodes, QuadTreeNode(T))
     	end
@@ -100,7 +104,7 @@ function _divide!{T<:AbstractPoint2D}(h::QuadTree{T}, q::QuadTreeNode{T})
     if !q.is_empty
         const sq = _getsubquad(q, q.point)
         sq.is_empty = false
-        sq.point = q.point
+        sq.point, q.point = q.point, sq.point
         q.is_empty = true
     end
     q.is_divided = true
@@ -123,8 +127,30 @@ function insert!{T<:AbstractPoint2D}(h::QuadTree{T}, point::T)
     while q.is_divided
         q = _getsubquad(q, point)
     end
-    while !q.is_empty
+    if !q.is_empty
         _divide!(h, q)
+        q = _getsubquad(q, point)
+    end
+    q.point = point
+    q.is_empty = false
+    q
+end
+
+modify{T<:AbstractPoint2D}(q::QuadTreeNode{T}, p::T) = error("Unimplemented!")
+
+immutable Modify end
+
+function insert!{T<:AbstractPoint2D}(h::QuadTree{T}, point::T, ::Type{Modify})
+    q = h.head
+    while q.is_divided
+        modify(q, point)
+        q = _getsubquad(q, point)
+    end
+    if !q.is_empty
+        friend = q.point
+        _divide!(h, q)
+        modify(q, friend)
+        modify(q, point)
         q = _getsubquad(q, point)
     end
     q.point = point
