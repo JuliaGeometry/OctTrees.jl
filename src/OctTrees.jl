@@ -14,6 +14,10 @@ export
 
 using GeometricalPredicates
 
+if VERSION < "0.4-"
+	sizehint! = sizehint
+end
+
 include("_quadtrees.jl")
 include("_octtrees.jl")
 
