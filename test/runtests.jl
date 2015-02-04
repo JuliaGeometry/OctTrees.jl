@@ -39,3 +39,11 @@ insert!(q, Point(0.9, 0.55))
 @test !q.head.hxhy.hxly.is_divided
 @test !q.head.hxhy.hxly.is_empty
 
+pa = [Point(rand(), rand()) for i in 1:1000000]
+function insert_unsorted_array(pa::Array{Point2D,1}, q::QuadTree)
+	for p in pa
+		insert!(q, p)
+	end
+end
+
+@time insert_unsorted_array(pa,q)

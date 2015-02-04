@@ -3,7 +3,8 @@ module OctTrees
 export
 	QuadTree,
 	insert!,
-	Point
+	Point,
+    Point2D
 
 using GeometricalPredicates
 
@@ -48,7 +49,7 @@ function _divide!{T<:AbstractPoint2D}(h::QuadTree{T}, q::QuadTreeNode{T})
     	new_size = length(h.nodes)+length(h.nodes) >>> 1
     	sizehint(h.nodes, new_size)
     	for i in 1:(new_size-length(h.nodes))
-    		push!(h.nodes, QuadTreeNode(0.,0.,1.,1.,T))
+    		push!(h.nodes, QuadTreeNode(T))
     	end
     end
     h.number_of_nodes_used += 1
@@ -100,9 +101,9 @@ function _divide!{T<:AbstractPoint2D}(h::QuadTree{T}, q::QuadTreeNode{T})
         const sq = _getsubquad(q, q.point)
         sq.is_empty = false
         sq.point = q.point
+        q.is_empty = true
     end
     q.is_divided = true
-    q.is_empty = true
     q
 end
 
@@ -110,18 +111,11 @@ function _getsubquad{T<:AbstractPoint2D}(q::QuadTreeNode{T}, point::T)
     const x=getx(point)
     const y=gety(point)
     if x<q.midx
-        if y<q.midy
-            return q.lxly
-        else
-            return q.lxhy
-        end
-    else
-        if y<q.midy
-            return q.hxly
-        else
-            return q.hxhy
-        end
+        y<q.midy && return q.lxly
+        return q.lxhy
     end
+    y<q.midy && return q.hxly
+    return q.hxhy
 end
 
 function insert!{T<:AbstractPoint2D}(h::QuadTree{T}, point::T)
