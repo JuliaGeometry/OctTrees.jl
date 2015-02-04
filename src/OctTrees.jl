@@ -14,7 +14,7 @@ export
 
 using GeometricalPredicates
 
-if VERSION < "0.4-"
+if VERSION < v"0.4-"
 	sizehint! = sizehint
 end
 
