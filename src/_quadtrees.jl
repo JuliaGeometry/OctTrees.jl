@@ -1,4 +1,7 @@
-type QuadTreeNode{T<:AbstractPoint2D}
+# specific stuff for quad trees
+
+
+type QuadTreeNode{T<:AbstractPoint2D} <: SpatialTreeNode
     minx::Float64
     maxx::Float64
     miny::Float64
@@ -20,7 +23,7 @@ QuadTreeNode{T<:AbstractPoint2D}(minx::Float64, maxx::Float64, miny::Float64, ma
 QuadTreeNode{T<:AbstractPoint2D}(::Type{T}) = QuadTreeNode(0., 1., 0., 1., T)
 QuadTreeNode() = QuadTreeNode(Point2D);
 
-type QuadTree{T<:AbstractPoint2D}
+type QuadTree{T<:AbstractPoint2D} <: SpatialTree
 	head::QuadTreeNode{T}
 	number_of_nodes_used::Int64
 	nodes::Array{QuadTreeNode, 1}
@@ -123,9 +126,6 @@ function insert!{T<:AbstractPoint2D}(h::QuadTree{T}, point::T)
     q
 end
 
-immutable Modify end
-
-modify{T<:AbstractPoint2D}(q::QuadTreeNode{T}, p::T, ::Type{Modify}) = modify(q,p)
 
 function insert!{T<:AbstractPoint2D}(h::QuadTree{T}, point::T, additional_data)
     q = h.head
@@ -143,21 +143,6 @@ function insert!{T<:AbstractPoint2D}(h::QuadTree{T}, point::T, additional_data)
     q.point = point
     q.is_empty = false
     q
-end
-
-immutable No_Cond_Data end
-immutable No_Apply_Data end
-cond{T<:AbstractPoint2D}(q::QuadTreeNode{T}, ::No_Cond_Data, ::No_Apply_Data) = cond(q)
-cond{T<:AbstractPoint2D}(q::QuadTreeNode{T}, cond_Data, ::No_Apply_Data) = cond(q, cond_data)
-cond{T<:AbstractPoint2D}(q::QuadTreeNode{T}, ::No_Cond_Data, apply_data) = cond(q, apply_data)
-
-apply{T<:AbstractPoint2D}(q::QuadTreeNode{T}, ::No_Cond_Data, ::No_Apply_Data) = apply(q)
-apply{T<:AbstractPoint2D}(q::QuadTreeNode{T}, cond_Data, ::No_Apply_Data) = apply(q, cond_data)
-apply{T<:AbstractPoint2D}(q::QuadTreeNode{T}, ::No_Cond_Data, apply_data) = apply(q, apply_data)
-
-function map{T<:AbstractPoint2D}(h::QuadTree{T}, cond_data=No_Cond_Data, apply_data=No_Apply_Data)
-    q = h.head
-    _map(q, cond_data, apply_data)
 end
 
 function _map{T<:AbstractPoint2D}(q::QuadTreeNode{T}, cond_data, apply_data)
