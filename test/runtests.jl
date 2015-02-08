@@ -42,6 +42,31 @@ insert!(q, Point(0.9, 0.55))
 @test !q.head.hxhy.hxly.is_divided
 @test !q.head.hxhy.hxly.is_empty
 
+##################################################################
+
+immutable Part <: AbstractPoint2D
+	_x::Float64
+	_y::Float64
+	Part(x,y) = new(x,y)
+end
+Part() = Part(0., 0.)
+getx(p::Part) = p._x
+gety(p::Part) = p._y
+
+q=QuadTree(Part; n=100)
+
+pa = [Part(rand(), rand()) for i in 1:1000000]
+function insert_unsorted_array(pa::Array{Part,1}, q::QuadTree)
+	for p in pa
+		insert!(q, p)
+	end
+end
+
+
+@time insert_unsorted_array(pa,q)
+
+##################################################################
+
 pa = [Point(rand(), rand()) for i in 1:1000000]
 function insert_unsorted_array(pa::Array{Point2D,1}, q::QuadTree)
 	for p in pa
@@ -51,8 +76,9 @@ end
 q=QuadTree(100)
 @time insert_unsorted_array(pa,q)
 
+
 # a massive particle
-type Particle <: AbstractPoint2D
+immutable Particle <: AbstractPoint2D
 	_x::Float64
 	_y::Float64
 	_m::Float64
@@ -66,10 +92,10 @@ gety(p::Particle) = p._y
 q=QuadTree(Particle; n=100)
 
 function modify(q::QuadTreeNode{Particle}, p::Particle)
-	total_mass = q.point._m + p._m
-	q.point._x = (q.point._x*q.point._m + p._x)/total_mass
-	q.point._y = (q.point._y*q.point._m + p._y)/total_mass
-	q.point._m = total_mass
+	const total_mass = q.point._m + p._m
+	const newx = (q.point._x*q.point._m + p._x)/total_mass
+	const newy = (q.point._y*q.point._m + p._y)/total_mass
+	q.point = Particle(newx, newy, total_mass)
 end
 
 @test q.head.is_empty == true
@@ -115,7 +141,7 @@ q=QuadTree(Particle; n=100)
 
 function modify(q::QuadTreeNode{Particle}, p::Particle, i::Int64)
 	@test i==1
-	q.point._m=7.0
+	q.point = Particle(q.point._x, q.point._y, 7.0)
 end
 
 insert!(q, Particle(0.1, 0.1), 1)

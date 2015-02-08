@@ -37,6 +37,7 @@ QuadTree{T<:AbstractPoint2D}(minx::Float64, maxx::Float64, miny::Float64, maxy::
 QuadTree{T<:AbstractPoint2D}(::Type{T};n=10000) = QuadTree(0., 1., 0., 1., T; n=n)
 QuadTree(n::Int64) = QuadTree(Point2D;n=n)
 QuadTree() = QuadTree(Point2D)
+eltype{T<:AbstractPoint2D}(::QuadTree{T}) = T
 
 function _divide!{T<:AbstractPoint2D}(h::QuadTree{T}, q::QuadTreeNode{T})
     if length(h.nodes) - h.number_of_nodes_used < 4

@@ -1,22 +1,27 @@
 module OctTrees
 
+using GeometricalPredicates
+
 export
-	QuadTree,
-	insert!,
-	Point,
+    QuadTree,
+    insert!,
+    clear!,
+    eltype,
+    Point,
     Point2D,
     Modify,
     modify,
     QuadTreeNode,
     map,
     No_Cond_Data,
-    No_Apply_Data
-
-using GeometricalPredicates
+    No_Apply_Data,
+    AbstractPoint,
+    AbstractPoint2D,
+    AbstractPoint3D
 
 # for compatibility reasons
 if VERSION < v"0.4-"
-	sizehint! = sizehint
+    sizehint! = sizehint
 end
 
 # General stuff good for both Quad and Oct trees
@@ -40,6 +45,21 @@ apply(q::SpatialTreeNode, ::No_Cond_Data, apply_data) = apply(q, apply_data)
 
 map(h::SpatialTree, cond_data=No_Cond_Data, apply_data=No_Apply_Data) =
     _map(h.head, cond_data, apply_data)
+
+function clear!(h::SpatialTree; init=true)
+    h.head.is_divided = false
+    h.head.is_empty = true
+    h.number_of_nodes_used = 1
+    if init
+        h.head.point = eltype(h)()
+        @inbounds for i in 1:length(h.nodes)
+            h.nodes[i].point = eltype(h)()
+            h.nodes[i].is_empty = true
+            h.nodes[i].is_divided = false
+        end
+    end
+    nothing
+end
 
 # specific stuff for Quad or Oct trees
 
