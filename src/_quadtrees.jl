@@ -146,14 +146,13 @@ function insert!{T<:AbstractPoint2D}(h::QuadTree{T}, point::T, additional_data)
     q
 end
 
-function _map{T<:AbstractPoint2D}(q::QuadTreeNode{T}, cond_data, apply_data)
-    if cond(q, cond_data, apply_data)
-        apply(q, cond_data, apply_data)
-    elseif q.is_divided
-        _map(q.lxly, cond_data, apply_data)
-        _map(q.lxhy, cond_data, apply_data)
-        _map(q.hxly, cond_data, apply_data)
-        _map(q.hxhy, cond_data, apply_data)
+function _map{T<:AbstractPoint2D}(q::QuadTreeNode{T}, cond_data)
+    stop_cond(q, cond_data) && return
+    if q.is_divided
+        _map(q.lxly, cond_data)
+        _map(q.lxhy, cond_data)
+        _map(q.hxly, cond_data)
+        _map(q.hxhy, cond_data)
     end
 end
 

@@ -31,20 +31,15 @@ abstract SpatialTreeNode
 
 immutable Modify end
 immutable No_Cond_Data end
-immutable No_Apply_Data end
 
-modify(q::SpatialTreeNode, p::AbstractPoint, ::Type{Modify}) = modify(q,p)
+modify(q::SpatialTreeNode, p::AbstractPoint, ::Type{Modify}) =
+    modify(q,p)
 
-cond(q::SpatialTreeNode, ::No_Cond_Data, ::No_Apply_Data) = cond(q)
-cond(q::SpatialTreeNode, cond_Data, ::No_Apply_Data) = cond(q, cond_data)
-cond(q::SpatialTreeNode, ::No_Cond_Data, apply_data) = cond(q, apply_data)
+stop_cond(q::SpatialTreeNode, ::Type{No_Cond_Data}) =
+    stop_cond(q)
 
-apply(q::SpatialTreeNode, ::No_Cond_Data, ::No_Apply_Data) = apply(q)
-apply(q::SpatialTreeNode, cond_Data, ::No_Apply_Data) = apply(q, cond_data)
-apply(q::SpatialTreeNode, ::No_Cond_Data, apply_data) = apply(q, apply_data)
-
-map(h::SpatialTree, cond_data=No_Cond_Data, apply_data=No_Apply_Data) =
-    _map(h.head, cond_data, apply_data)
+map(h::SpatialTree, cond_data=No_Cond_Data) =
+    _map(h.head, cond_data)
 
 function clear!(h::SpatialTree; init=true)
     h.head.is_divided = false

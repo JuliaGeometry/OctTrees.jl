@@ -1,5 +1,5 @@
 using OctTrees
-import OctTrees:modify, cond, apply
+import OctTrees: modify, stop_cond
 using GeometricalPredicates
 import GeometricalPredicates:getx, gety
 using Base.Test
@@ -120,22 +120,43 @@ insert!(q, Particle(0.9, 0.9), Modify)
 @test q.head.hxhy.point._x == 0.9
 @test q.head.hxhy.point._y == 0.9
 
-function cond(q::QuadTreeNode{Particle}, cond_data::Int64, apply_data::Int64)
-	q.point._m > 1.0
-end
-
-apply_called = false
-function apply(q::QuadTreeNode{Particle}, cond_data::Int64, apply_data::Int64)
-	global apply_called
+cond_satisfied = false
+function stop_cond(q::QuadTreeNode{Particle}, cond_data::Int64)
+	q.point._m <= 1.1 && return false
+	global cond_satisfied = true
 	@test q.point._m == 2.0
 	@test cond_data==1
-	@test apply_data==2
-	apply_called = true
+	true
 end
 
-map(q, 1, 2)
+map(q, 1)
 
-@test apply_called == true
+@test cond_satisfied == true
+
+float_cond_satisfied = false
+function stop_cond(q::QuadTreeNode{Particle}, cond_data::Float64)
+	q.point._m <= 1.1 && return false
+	global float_cond_satisfied = true
+	@test q.point._m == 2.0
+	@test cond_data==1.0
+	true
+end
+
+map(q, 1.0)
+
+@test float_cond_satisfied == true
+
+nodata_cond_satisfied = false
+function stop_cond(q::QuadTreeNode{Particle})
+	q.point._m <= 1.1 && return false
+	global nodata_cond_satisfied = true
+	@test q.point._m == 2.0
+	true
+end
+
+map(q)
+
+@test nodata_cond_satisfied == true
 
 q=QuadTree(Particle; n=100)
 
