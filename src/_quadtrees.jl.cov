@@ -1,0 +1,160 @@
+        - # specific stuff for quad trees
+        - 
+        - 
+        - type QuadTreeNode{T<:AbstractPoint2D} <: SpatialTreeNode
+        -     minx::Float32
+        -     maxx::Float32
+        -     miny::Float32
+        -     maxy::Float32
+        -     midx::Float32
+        -     midy::Float32
+        -     is_empty::Bool
+        -     is_divided::Bool
+        -     point::T
+        -     lxly::QuadTreeNode{T}
+        -     lxhy::QuadTreeNode{T}
+        -     hxly::QuadTreeNode{T}
+        -     hxhy::QuadTreeNode{T}
+  5029310     QuadTreeNode(minx::Float32, maxx::Float32, miny::Float32, maxy::Float32) = 
+        -         new(minx, maxx, miny, maxy, (minx+maxx)/2, (miny+maxy)/2, true, false, T())
+        - end
+        - 
+  5029310 QuadTreeNode{T<:AbstractPoint2D}(minx::Float32, maxx::Float32, miny::Float32, maxy::Float32, ::Type{T}) = QuadTreeNode{T}(minx, maxx, miny, maxy)
+  5028810 QuadTreeNode{T<:AbstractPoint2D}(::Type{T}) = QuadTreeNode(Float32(0.), Float32(1.), Float32(0.), Float32(1.), T)
+        - QuadTreeNode() = QuadTreeNode(Point2D);
+        - 
+        - type QuadTree{T<:AbstractPoint2D} <: SpatialTree
+        - 	head::QuadTreeNode{T}
+        - 	number_of_nodes_used::Int64
+        - 	nodes::Array{QuadTreeNode, 1}
+        -     function QuadTree(minx::Float32, maxx::Float32, miny::Float32, maxy::Float32, n::Int64=100000)
+        5     	nodes = QuadTreeNode[QuadTreeNode(minx, maxx, miny, maxy, T) for i in 1:n]
+        5         new(nodes[1], 1, nodes)
+        -     end
+        - end
+        - 
+        5 QuadTree{T<:AbstractPoint2D}(minx::Float32, maxx::Float32, miny::Float32, maxy::Float32, ::Type{T};n=1000) = QuadTree{T}(minx, maxx, miny, maxy, n)
+        5 QuadTree{T<:AbstractPoint2D}(::Type{T};n=10000) = QuadTree(Float32(0.), Float32(1.), Float32(0.), Float32(1.), T; n=n)
+        2 QuadTree(n::Int64) = QuadTree(Point2D;n=n)
+        - QuadTree() = QuadTree(Point2D)
+        - eltype{T<:AbstractPoint2D}(::QuadTree{T}) = T
+        - 
+        - function _divide!{T<:AbstractPoint2D}(h::QuadTree{T}, q::QuadTreeNode{T})
+  1133231     if length(h.nodes) - h.number_of_nodes_used < 4
+       50     	new_size = length(h.nodes)+length(h.nodes) >>> 1
+       50     	sizehint!(h.nodes, new_size)
+       50     	for i in 1:(new_size-length(h.nodes))
+  5028810     		push!(h.nodes, QuadTreeNode(T))
+        -     	end
+        -     end
+  1133231     h.number_of_nodes_used += 1
+  1133231     q.lxly = h.nodes[h.number_of_nodes_used]
+  1133231     q.lxly.minx = q.minx
+  1133231     q.lxly.maxx = q.midx
+  1133231     q.lxly.miny = q.miny
+  1133231     q.lxly.maxy = q.midy
+  1133231     q.lxly.is_empty = true
+  1133231     q.lxly.is_divided = false
+  1133231     q.lxly.midx = (q.lxly.minx+q.lxly.maxx)/2
+  1133231     q.lxly.midy = (q.lxly.miny+q.lxly.maxy)/2
+        - 
+  1133231     h.number_of_nodes_used += 1
+  1133231     q.lxhy = h.nodes[h.number_of_nodes_used]
+  1133231     q.lxhy.minx = q.minx
+  1133231     q.lxhy.maxx = q.midx
+  1133231     q.lxhy.miny = q.midy
+  1133231     q.lxhy.maxy = q.maxy
+  1133231     q.lxhy.is_empty = true
+  1133231     q.lxhy.is_divided = false
+  1133231     q.lxhy.midx = (q.lxhy.minx+q.lxhy.maxx)/2
+  1133231     q.lxhy.midy = (q.lxhy.miny+q.lxhy.maxy)/2
+        - 
+  1133231     h.number_of_nodes_used += 1
+  1133231     q.hxly = h.nodes[h.number_of_nodes_used]
+  1133231     q.hxly.minx = q.midx
+  1133231     q.hxly.maxx = q.maxx
+  1133231     q.hxly.miny = q.miny
+  1133231     q.hxly.maxy = q.midy
+  1133231     q.hxly.is_empty = true
+  1133231     q.hxly.is_divided = false
+  1133231     q.hxly.midx = (q.hxly.minx+q.hxly.maxx)/2
+  1133231     q.hxly.midy = (q.hxly.miny+q.hxly.maxy)/2
+        - 
+  1133231     h.number_of_nodes_used += 1
+  1133231     q.hxhy = h.nodes[h.number_of_nodes_used]
+  1133231     q.hxhy.minx = q.midx
+  1133231     q.hxhy.maxx = q.maxx
+  1133231     q.hxhy.miny = q.midy
+  1133231     q.hxhy.maxy = q.maxy
+  1133231     q.hxhy.is_empty = true
+  1133231     q.hxhy.is_divided = false
+  1133231     q.hxhy.midx = (q.hxhy.minx+q.hxhy.maxx)/2
+  1133231     q.hxhy.midy = (q.hxhy.miny+q.hxhy.maxy)/2
+        - 
+        - 
+  1133231     if !q.is_empty
+  1133231         const sq = _getsubquad(q, q.point)
+  1133231         sq.is_empty = false
+  1133231         sq.point, q.point = q.point, sq.point
+  1133231         q.is_empty = true
+        -     end
+  1133231     q.is_divided = true
+  1133231     q
+        - end
+        - 
+        - function _getsubquad{T<:AbstractPoint2D}(q::QuadTreeNode{T}, point::T)
+ 21018804     const x=getx(point)
+ 21018804     const y=gety(point)
+ 21018804     if x<q.midx
+ 10506620         y<q.midy && return q.lxly
+  5253643         return q.lxhy
+        -     end
+ 10512184     y<q.midy && return q.hxly
+  5255225     return q.hxhy
+        - end
+        - 
+        - function insert!{T<:AbstractPoint2D}(h::QuadTree{T}, point::T)
+  2000004 	q = h.head
+  2000004     while q.is_divided
+ 18752342         q = _getsubquad(q, point)
+        -     end
+  2000004     if !q.is_empty
+  1133229         _divide!(h, q)
+  1133229         q = _getsubquad(q, point)
+        -     end
+  2000004     q.point = point
+  2000004     q.is_empty = false
+  2000004     q
+        - end
+        - 
+        - 
+        - function insert!{T<:AbstractPoint2D}(h::QuadTree{T}, point::T, additional_data)
+        4     q = h.head
+        4     while q.is_divided
+        0         modify(q, point, additional_data)
+        0         q = _getsubquad(q, point)
+        -     end
+        4     if !q.is_empty
+        2         friend = q.point
+        2         _divide!(h, q)
+        2         modify(q, friend, additional_data)
+        2         modify(q, point, additional_data)
+        2         q = _getsubquad(q, point)
+        -     end
+        4     q.point = point
+        4     q.is_empty = false
+        4     q
+        - end
+        - 
+        - function _map{T<:AbstractPoint2D}(q::QuadTreeNode{T}, cond_data)
+        3     stop_cond(q, cond_data) && return
+        0     if q.is_divided
+        0         _map(q.lxly, cond_data)
+        0         _map(q.lxhy, cond_data)
+        0         _map(q.hxly, cond_data)
+        0         _map(q.hxhy, cond_data)
+        -     end
+        - end
+        - 
+        - 
+        - 
