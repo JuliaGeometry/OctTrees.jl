@@ -9,6 +9,14 @@ q=QuadTree(100)
 insert!(q, Point(0.1, 0.1))
 insert!(q, Point(0.9, 0.9))
 
+tot=0
+for i in 1:q.number_of_nodes_used
+    @inbounds !isnotemptyleaf(q.nodes[i]) && continue
+    tot+=1
+end
+@test tot == 2
+
+
 @test !q.head.lxhy.is_divided
 @test q.head.lxhy.is_empty
 @test !q.head.hxly.is_divided
@@ -53,7 +61,7 @@ Part() = Part(0., 0.)
 getx(p::Part) = p._x
 gety(p::Part) = p._y
 
-q=QuadTree(Part; n=100)
+q=QuadTree(Part; n=4000100)
 
 pa = [Part(rand(), rand()) for i in 1:1000000]
 function insert_unsorted_array(pa::Array{Part,1}, q::QuadTree)
@@ -73,8 +81,11 @@ function insert_unsorted_array(pa::Array{Point2D,1}, q::QuadTree)
 		insert!(q, p)
 	end
 end
-q=QuadTree(100)
+q=QuadTree(4000100)
 @time insert_unsorted_array(pa,q)
+clear!(q)
+@time insert_unsorted_array(pa,q)
+
 
 
 # a massive particle
@@ -169,5 +180,17 @@ insert!(q, Particle(0.1, 0.1), 1)
 insert!(q, Particle(0.9, 0.9), 1)
 @test q.head.point._m == 7.0
 
+
+N = 10000
+q=QuadTree()
+for i in 1:N
+	insert!(q, Point(rand(), rand()))
+end
+tot=0
+for i in 1:q.number_of_nodes_used
+    @inbounds !isnotemptyleaf(q.nodes[i]) && continue
+    tot+=1
+end
+@test tot == N
 
 

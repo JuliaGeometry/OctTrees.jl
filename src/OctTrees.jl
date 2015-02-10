@@ -17,7 +17,12 @@ export
     No_Apply_Data,
     AbstractPoint,
     AbstractPoint2D,
-    AbstractPoint3D
+    AbstractPoint3D,
+    isleaf,
+    isemptyleaf,
+    isnotemptyleaf,
+    divide!,
+    initnode!
 
 # for compatibility reasons
 if VERSION < v"0.4-"
@@ -32,13 +37,14 @@ abstract SpatialTreeNode
 immutable Modify end
 immutable No_Cond_Data end
 
-modify(q::SpatialTreeNode, p::AbstractPoint, ::Type{Modify}) =
-    modify(q,p)
+@inline isleaf(q::SpatialTreeNode) = !q.is_divided
+@inline isemptyleaf(q::SpatialTreeNode) = !q.is_divided && q.is_empty
+@inline isnotemptyleaf(q::SpatialTreeNode) = !q.is_divided && !q.is_empty
 
-stop_cond(q::SpatialTreeNode, ::Type{No_Cond_Data}) =
+@inline stop_cond(q::SpatialTreeNode, ::Type{No_Cond_Data}) =
     stop_cond(q)
 
-map(h::SpatialTree, cond_data=No_Cond_Data) =
+@inline map(h::SpatialTree, cond_data=No_Cond_Data) =
     _map(h.head, cond_data)
 
 function clear!(h::SpatialTree; init=true)
@@ -47,13 +53,75 @@ function clear!(h::SpatialTree; init=true)
     h.number_of_nodes_used = 1
     if init
         h.head.point = eltype(h)()
-        @inbounds for i in 1:length(h.nodes)
+        @inbounds for i in 1:h.number_of_nodes_used
             h.nodes[i].point = eltype(h)()
-            h.nodes[i].is_empty = true
-            h.nodes[i].is_divided = false
+            @inbounds h.nodes[i].is_empty = true
+            @inbounds h.nodes[i].is_divided = false
         end
     end
     nothing
+end
+
+function insert!(h::SpatialTree, point::AbstractPoint)
+    q = h.head
+    while q.is_divided
+        q = _getsubquad(q, point)
+    end
+    while !q.is_empty
+        divide!(h, q)
+        q = _getsubquad(q, point)
+    end
+    q.point = point
+    q.is_empty = false
+    q
+end
+
+# This function is needed for speed. Using another modify and the function below doesn't help!
+# TODO: is this a bug?!
+# @inline modify(q::SpatialTreeNode, p::AbstractPoint, ::Type{Modify}) =
+#     modify(q,p)
+modify() = error("not implemented!")
+function insert!(h::SpatialTree, point::AbstractPoint, ::Type{Modify})
+    q = h.head
+    while q.is_divided
+        modify(q, point)
+        q = _getsubquad(q, point)
+    end
+    while !q.is_empty
+        const friend = q.point
+        divide!(h, q)
+        modify(q, friend)
+        modify(q, point)
+        q = _getsubquad(q, point)
+    end
+    q.point = point
+    q.is_empty = false
+    q
+end
+
+function insert!(h::SpatialTree, point::AbstractPoint, additional_data)
+    q = h.head
+    while q.is_divided
+        modify(q, point, additional_data)
+        q = _getsubquad(q, point)
+    end
+    while !q.is_empty
+        const friend = q.point
+        divide!(h, q)
+        modify(q, friend, additional_data)
+        modify(q, point, additional_data)
+        q = _getsubquad(q, point)
+    end
+    q.point = point
+    q.is_empty = false
+    q
+end
+
+function insert!{T<:AbstractPoint}(h::SpatialTree, points::Array{T,1}, ::Type{Modify})
+    mssort!(points)
+    for i in 1:length(points)
+        @inbounds insert!(h, points[i], Modify)
+    end
 end
 
 # specific stuff for Quad or Oct trees
