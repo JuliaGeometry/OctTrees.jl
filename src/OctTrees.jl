@@ -3,15 +3,18 @@ module OctTrees
 using GeometricalPredicates
 
 export
+    OctTree,
     QuadTree,
     insert!,
     clear!,
     eltype,
     Point,
     Point2D,
+    Point3D,
     Modify,
     modify,
     QuadTreeNode,
+    OctTreeNode,
     map,
     No_Cond_Data,
     No_Apply_Data,
@@ -65,11 +68,11 @@ end
 function insert!(h::SpatialTree, point::AbstractPoint)
     q = h.head
     while q.is_divided
-        q = _getsubquad(q, point)
+        q = _getsubnode(q, point)
     end
     while !q.is_empty
         divide!(h, q)
-        q = _getsubquad(q, point)
+        q = _getsubnode(q, point)
     end
     q.point = point
     q.is_empty = false
@@ -85,14 +88,14 @@ function insert!(h::SpatialTree, point::AbstractPoint, ::Type{Modify})
     q = h.head
     while q.is_divided
         modify(q, point)
-        q = _getsubquad(q, point)
+        q = _getsubnode(q, point)
     end
     while !q.is_empty
         const friend = q.point
         divide!(h, q)
         modify(q, friend)
         modify(q, point)
-        q = _getsubquad(q, point)
+        q = _getsubnode(q, point)
     end
     q.point = point
     q.is_empty = false
@@ -103,14 +106,14 @@ function insert!(h::SpatialTree, point::AbstractPoint, additional_data)
     q = h.head
     while q.is_divided
         modify(q, point, additional_data)
-        q = _getsubquad(q, point)
+        q = _getsubnode(q, point)
     end
     while !q.is_empty
         const friend = q.point
         divide!(h, q)
         modify(q, friend, additional_data)
         modify(q, point, additional_data)
-        q = _getsubquad(q, point)
+        q = _getsubnode(q, point)
     end
     q.point = point
     q.is_empty = false
@@ -126,7 +129,7 @@ end
 
 # specific stuff for Quad or Oct trees
 
-include("_quadtrees.jl")
 include("_octtrees.jl")
+include("_quadtrees.jl")
 
 end # module

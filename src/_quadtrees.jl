@@ -19,7 +19,8 @@ type QuadTreeNode{T<:AbstractPoint2D} <: SpatialTreeNode
         new(minx, maxx, miny, maxy, (minx+maxx)/2, (miny+maxy)/2, true, false, T())
 end
 
-QuadTreeNode{T<:AbstractPoint2D}(minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, ::Type{T}) = QuadTreeNode{T}(minx, maxx, miny, maxy)
+QuadTreeNode{T<:AbstractPoint2D}(minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, ::Type{T}) =
+    QuadTreeNode{T}(minx, maxx, miny, maxy)
 QuadTreeNode{T<:AbstractPoint2D}(::Type{T}) = QuadTreeNode(Float64(0.), Float64(1.), Float64(0.), Float64(1.), T)
 QuadTreeNode() = QuadTreeNode(Point2D);
 
@@ -77,7 +78,7 @@ function divide!{T<:AbstractPoint2D}(h::QuadTree{T}, q::QuadTreeNode{T})
     q.is_divided = true
     if !q.is_empty
         # move point in parent node to child node
-        const sq = _getsubquad(q, q.point)
+        const sq = _getsubnode(q, q.point)
         sq.is_empty = false
         q.is_empty = true
         sq.point, q.point = q.point, sq.point
@@ -85,7 +86,7 @@ function divide!{T<:AbstractPoint2D}(h::QuadTree{T}, q::QuadTreeNode{T})
     q
 end
 
-function _getsubquad{T<:AbstractPoint2D}(q::QuadTreeNode{T}, point::T)
+function _getsubnode{T<:AbstractPoint2D}(q::QuadTreeNode{T}, point::T)
     const x=getx(point)
     const y=gety(point)
     if x<q.midx
