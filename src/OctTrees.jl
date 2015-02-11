@@ -40,14 +40,14 @@ abstract SpatialTreeNode
 immutable Modify end
 immutable No_Cond_Data end
 
-@inline isleaf(q::SpatialTreeNode) = !q.is_divided
-@inline isemptyleaf(q::SpatialTreeNode) = !q.is_divided && q.is_empty
-@inline isnotemptyleaf(q::SpatialTreeNode) = !q.is_divided && !q.is_empty
+isleaf(q::SpatialTreeNode) = !q.is_divided
+isemptyleaf(q::SpatialTreeNode) = !q.is_divided && q.is_empty
+isnotemptyleaf(q::SpatialTreeNode) = !q.is_divided && !q.is_empty
 
-@inline stop_cond(q::SpatialTreeNode, ::Type{No_Cond_Data}) =
+stop_cond(q::SpatialTreeNode, ::Type{No_Cond_Data}) =
     stop_cond(q)
 
-@inline map(h::SpatialTree, cond_data=No_Cond_Data) =
+map(h::SpatialTree, cond_data=No_Cond_Data) =
     _map(h.head, cond_data)
 
 function clear!(h::SpatialTree; init=true)
@@ -81,7 +81,7 @@ end
 
 # This function is needed for speed. Using another modify and the function below doesn't help!
 # TODO: is this a bug?!
-# @inline modify(q::SpatialTreeNode, p::AbstractPoint, ::Type{Modify}) =
+# modify(q::SpatialTreeNode, p::AbstractPoint, ::Type{Modify}) =
 #     modify(q,p)
 modify() = error("not implemented!")
 function insert!(h::SpatialTree, point::AbstractPoint, ::Type{Modify})
