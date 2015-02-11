@@ -1,5 +1,5 @@
 # make sure we use the master branch
-Pkg.checkout("Distributions")
+Pkg.checkout("GeometricalPredicates")
 
 using OctTrees
 import OctTrees: modify, stop_cond
