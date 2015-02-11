@@ -43,7 +43,7 @@ type OctTree{T<:AbstractPoint3D} <: SpatialTree
 end
 
 OctTree{T<:AbstractPoint3D}(minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, minz::Float64, maxz::Float64, ::Type{T};n=1000) = OctTree{T}(minx, maxx, miny, maxy, minz, maxz, n)
-OctTree{T<:AbstractPoint3D}(::Type{T};n=10000) = OctTree(Float64(0.), Float64(1.), Float64(0.), Float64(1.), Float64(0.), Float64(1.0), T; n=n)
+OctTree{T<:AbstractPoint3D}(::Type{T};n=10000) = OctTree(0., 1., 0., 1., 0., 1.0, T; n=n)
 OctTree(n::Int64) = OctTree(Point3D;n=n)
 OctTree() = OctTree(Point3D)
 eltype{T<:AbstractPoint3D}(::OctTree{T}) = T

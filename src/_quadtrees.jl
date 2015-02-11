@@ -21,7 +21,7 @@ end
 
 QuadTreeNode{T<:AbstractPoint2D}(minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, ::Type{T}) =
     QuadTreeNode{T}(minx, maxx, miny, maxy)
-QuadTreeNode{T<:AbstractPoint2D}(::Type{T}) = QuadTreeNode(Float64(0.), Float64(1.), Float64(0.), Float64(1.), T)
+QuadTreeNode{T<:AbstractPoint2D}(::Type{T}) = QuadTreeNode(0., 1., 0., 1., T)
 QuadTreeNode() = QuadTreeNode(Point2D);
 
 type QuadTree{T<:AbstractPoint2D} <: SpatialTree
@@ -35,7 +35,7 @@ type QuadTree{T<:AbstractPoint2D} <: SpatialTree
 end
 
 QuadTree{T<:AbstractPoint2D}(minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, ::Type{T};n=1000) = QuadTree{T}(minx, maxx, miny, maxy, n)
-QuadTree{T<:AbstractPoint2D}(::Type{T};n=10000) = QuadTree(Float64(0.), Float64(1.), Float64(0.), Float64(1.), T; n=n)
+QuadTree{T<:AbstractPoint2D}(::Type{T};n=10000) = QuadTree(0., 1., 0., 1., T; n=n)
 QuadTree(n::Int64) = QuadTree(Point2D;n=n)
 QuadTree() = QuadTree(Point2D)
 eltype{T<:AbstractPoint2D}(::QuadTree{T}) = T
