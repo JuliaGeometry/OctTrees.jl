@@ -46,9 +46,9 @@ OctTree{T<:AbstractPoint3D}(minx::Float64, maxx::Float64, miny::Float64, maxy::F
 OctTree{T<:AbstractPoint3D}(::Type{T};n=10000) = OctTree(Float64(0.), Float64(1.), Float64(0.), Float64(1.), Float64(0.), Float64(1.0), T; n=n)
 OctTree(n::Int64) = OctTree(Point3D;n=n)
 OctTree() = OctTree(Point3D)
-@inline eltype{T<:AbstractPoint3D}(::OctTree{T}) = T
+eltype{T<:AbstractPoint3D}(::OctTree{T}) = T
 
-@inline function initnode!{T<:AbstractPoint3D}(q::OctTreeNode{T}, minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, minz::Float64, maxz::Float64)
+ function initnode!{T<:AbstractPoint3D}(q::OctTreeNode{T}, minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, minz::Float64, maxz::Float64)
     q.minx = minx
     q.maxx = maxx
     q.miny = miny

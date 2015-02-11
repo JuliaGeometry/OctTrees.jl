@@ -38,9 +38,9 @@ QuadTree{T<:AbstractPoint2D}(minx::Float64, maxx::Float64, miny::Float64, maxy::
 QuadTree{T<:AbstractPoint2D}(::Type{T};n=10000) = QuadTree(Float64(0.), Float64(1.), Float64(0.), Float64(1.), T; n=n)
 QuadTree(n::Int64) = QuadTree(Point2D;n=n)
 QuadTree() = QuadTree(Point2D)
-@inline eltype{T<:AbstractPoint2D}(::QuadTree{T}) = T
+eltype{T<:AbstractPoint2D}(::QuadTree{T}) = T
 
-@inline function initnode!{T<:AbstractPoint2D}(q::QuadTreeNode{T}, minx::Float64, maxx::Float64, miny::Float64, maxy::Float64)
+function initnode!{T<:AbstractPoint2D}(q::QuadTreeNode{T}, minx::Float64, maxx::Float64, miny::Float64, maxy::Float64)
     q.minx = minx
     q.maxx = maxx
     q.miny = miny
