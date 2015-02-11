@@ -1,3 +1,6 @@
+# make sure we use the master branch
+Pkg.checkout("Distributions")
+
 using OctTrees
 import OctTrees: modify, stop_cond
 using GeometricalPredicates
