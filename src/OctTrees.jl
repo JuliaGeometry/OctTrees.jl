@@ -53,7 +53,6 @@ map(h::SpatialTree, cond_data=No_Cond_Data) =
 function clear!(h::SpatialTree; init=true)
     h.head.is_divided = false
     h.head.is_empty = true
-    h.number_of_nodes_used = 1
     if init
         h.head.point = eltype(h)()
         @inbounds for i in 1:h.number_of_nodes_used
@@ -62,6 +61,7 @@ function clear!(h::SpatialTree; init=true)
             @inbounds h.nodes[i].is_divided = false
         end
     end
+    h.number_of_nodes_used = 1
     nothing
 end
 
