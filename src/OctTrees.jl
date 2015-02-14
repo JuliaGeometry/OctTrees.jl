@@ -23,7 +23,7 @@ export
     AbstractPoint3D,
     isleaf,
     isemptyleaf,
-    isnotemptyleaf,
+    isfullleaf,
     divide!,
     initnode!
 
@@ -42,7 +42,7 @@ immutable No_Cond_Data end
 
 isleaf(q::SpatialTreeNode) = !q.is_divided
 isemptyleaf(q::SpatialTreeNode) = !q.is_divided && q.is_empty
-isnotemptyleaf(q::SpatialTreeNode) = !q.is_divided && !q.is_empty
+isfullleaf(q::SpatialTreeNode) = !q.is_empty
 
 stop_cond(q::SpatialTreeNode, ::Type{No_Cond_Data}) =
     stop_cond(q)

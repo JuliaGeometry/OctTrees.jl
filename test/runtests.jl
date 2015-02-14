@@ -19,9 +19,16 @@ q=QuadTree(100)
 insert!(q, Point(0.1, 0.1))
 insert!(q, Point(0.9, 0.9))
 
+@test q.number_of_nodes_used == 5
+
+q=QuadTree(100)
+
+insert!(q, Point(0.1, 0.1))
+insert!(q, Point(0.9, 0.9))
+
 tot=0
 for i in 1:q.number_of_nodes_used
-    @inbounds !isnotemptyleaf(q.nodes[i]) && continue
+    @inbounds !isfullleaf(q.nodes[i]) && continue
     tot+=1
 end
 @test tot == 2
@@ -198,7 +205,7 @@ for i in 1:N
 end
 tot=0
 for i in 1:q.number_of_nodes_used
-    @inbounds !isnotemptyleaf(q.nodes[i]) && continue
+    @inbounds !isfullleaf(q.nodes[i]) && continue
     tot+=1
 end
 @test tot == N
@@ -215,9 +222,16 @@ q=OctTree(100)
 insert!(q, Point(0.1, 0.1, 0.1))
 insert!(q, Point(0.9, 0.9, 0.9))
 
+@test q.number_of_nodes_used == 9
+
+q=OctTree(100)
+
+insert!(q, Point(0.1, 0.1, 0.1))
+insert!(q, Point(0.9, 0.9, 0.9))
+
 tot=0
 for i in 1:q.number_of_nodes_used
-    @inbounds !isnotemptyleaf(q.nodes[i]) && continue
+    @inbounds !isfullleaf(q.nodes[i]) && continue
     tot+=1
 end
 @test tot == 2
@@ -403,7 +417,7 @@ for i in 1:N
 end
 tot=0
 for i in 1:q.number_of_nodes_used
-    @inbounds !isnotemptyleaf(q.nodes[i]) && continue
+    @inbounds !isfullleaf(q.nodes[i]) && continue
     tot+=1
 end
 @test tot == N
