@@ -22,7 +22,7 @@ type OctTreeNode{T<:AbstractPoint3D} <: SpatialTreeNode
     lxhyhz::OctTreeNode{T}
     hxlyhz::OctTreeNode{T}
     hxhyhz::OctTreeNode{T}
-    function OctTreeNode(minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, minz::Float64, maxz::Float64)
+    function OctTreeNode(minx::Number, maxx::Number, miny::Number, maxy::Number, minz::Number, maxz::Number)
         n = new(minx, maxx, miny, maxy, minz, maxz, (minx+maxx)/2, (miny+maxy)/2, (minz+maxz)/2, true, false, T())
         n.lxlylz = n
         n.lxhylz = n
@@ -59,7 +59,7 @@ OctTree(n::Int64) = OctTree(Point3D;n=n)
 OctTree() = OctTree(Point3D)
 eltype{T<:AbstractPoint3D}(::OctTree{T}) = T
 
- @inline function initnode!{T<:AbstractPoint3D}(q::OctTreeNode{T}, minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, minz::Float64, maxz::Float64)
+ @inline function initnode!{T<:AbstractPoint3D}(q::OctTreeNode{T}, minx::Number, maxx::Number, miny::Number, maxy::Number, minz::Number, maxz::Number)
     q.minx = minx
     q.maxx = maxx
     q.miny = miny
