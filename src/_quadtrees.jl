@@ -2,10 +2,7 @@
 
 
 type QuadTreeNode{T<:AbstractPoint2D} <: SpatialTreeNode
-    minx::Float64
-    maxx::Float64
-    miny::Float64
-    maxy::Float64
+    r::Float64
     midx::Float64
     midy::Float64
     is_empty::Bool
@@ -15,13 +12,13 @@ type QuadTreeNode{T<:AbstractPoint2D} <: SpatialTreeNode
     lxhy::QuadTreeNode{T}
     hxly::QuadTreeNode{T}
     hxhy::QuadTreeNode{T}
-    QuadTreeNode(minx::Float64, maxx::Float64, miny::Float64, maxy::Float64) = 
-        new(minx, maxx, miny, maxy, (minx+maxx)/2, (miny+maxy)/2, true, false, T())
+    QuadTreeNode(r::Number, midx::Number, midy::Number) = 
+        new(r, midx, midy, true, false, T())
 end
 
-QuadTreeNode{T<:AbstractPoint2D}(minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, ::Type{T}) =
-    QuadTreeNode{T}(minx, maxx, miny, maxy)
-QuadTreeNode{T<:AbstractPoint2D}(::Type{T}) = QuadTreeNode(0., 1., 0., 1., T)
+QuadTreeNode{T<:AbstractPoint2D}(r::Number, midx::Number, midy::Number, ::Type{T}) =
+    QuadTreeNode{T}(r, midx, midy)
+QuadTreeNode{T<:AbstractPoint2D}(::Type{T}) = QuadTreeNode(0.5, 0.5, 0.5, T)
 QuadTreeNode() = QuadTreeNode(Point2D);
 
 type QuadTree{T<:AbstractPoint2D} <: SpatialTree
@@ -29,27 +26,25 @@ type QuadTree{T<:AbstractPoint2D} <: SpatialTree
 	number_of_nodes_used::Int64
 	nodes::Array{QuadTreeNode, 1}
     faststack::Array{QuadTreeNode{T}, 1}
-    function QuadTree(minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, n::Int64=100000)
-    	nodes = QuadTreeNode[QuadTreeNode(minx, maxx, miny, maxy, T) for i in 1:n]
+    function QuadTree(r::Number, midx::Number, midy::Number, n::Int64=100000)
+    	nodes = QuadTreeNode[QuadTreeNode(r, midx, midy, T) for i in 1:n]
         new(nodes[1], 1, nodes, [QuadTreeNode(T) for i in 1:10000])
     end
 end
 
-QuadTree{T<:AbstractPoint2D}(minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, ::Type{T};n=1000) = QuadTree{T}(minx, maxx, miny, maxy, n)
-QuadTree{T<:AbstractPoint2D}(::Type{T};n=10000) = QuadTree(0., 1., 0., 1., T; n=n)
+QuadTree{T<:AbstractPoint2D}(r::Number, midx::Number, midy::Number, ::Type{T};n=1000) =
+    QuadTree{T}(r, midx, midy, n)
+QuadTree{T<:AbstractPoint2D}(::Type{T};n=10000) = QuadTree(0.5, 0.5, 0.5, T; n=n)
 QuadTree(n::Int64) = QuadTree(Point2D;n=n)
 QuadTree() = QuadTree(Point2D)
 eltype{T<:AbstractPoint2D}(::QuadTree{T}) = T
 
-function initnode!{T<:AbstractPoint2D}(q::QuadTreeNode{T}, minx::Float64, maxx::Float64, miny::Float64, maxy::Float64)
-    q.minx = minx
-    q.maxx = maxx
-    q.miny = miny
-    q.maxy = maxy
+function initnode!{T<:AbstractPoint2D}(q::QuadTreeNode{T}, r::Number, midx::Number, midy::Number)
+    q.r = r
+    q.midx = midx
+    q.midy = midy
     q.is_empty = true
     q.is_divided = false
-    q.midx = (minx+maxx)/2
-    q.midy = (miny+maxy)/2
 end
 
 function divide!{T<:AbstractPoint2D}(h::QuadTree{T}, q::QuadTreeNode{T})
@@ -69,10 +64,11 @@ function divide!{T<:AbstractPoint2D}(h::QuadTree{T}, q::QuadTreeNode{T})
     @inbounds q.hxhy = h.nodes[h.number_of_nodes_used+4]
 
     # set new nodes properties (dimensions etc.)
-    initnode!(q.lxly, q.minx, q.midx, q.miny, q.midy)
-    initnode!(q.lxhy, q.minx, q.midx, q.midy, q.maxy)
-    initnode!(q.hxly, q.midx, q.maxx, q.miny, q.midy)
-    initnode!(q.hxhy, q.midx, q.maxx, q.midy, q.maxy)
+    const r2 = q.r/2
+    initnode!(q.lxly, r2, q.midx-r2, q.midy-r2)
+    initnode!(q.lxhy, r2, q.midx-r2, q.midy+r2)
+    initnode!(q.hxly, r2, q.midx+r2, q.midy-r2)
+    initnode!(q.hxhy, r2, q.midx+r2, q.midy+r2)
 
     # update tree and parent node
     h.number_of_nodes_used += 4
@@ -100,12 +96,11 @@ end
 
 @inline function map{T<:AbstractPoint2D}(t::QuadTree{T}, cond_data)
     curr_stack_ix = 1
-    t.faststack[1] = t.head
+    @inbounds t.faststack[1] = t.head
     while curr_stack_ix > 0
         @inbounds q = t.faststack[curr_stack_ix]
-        curr_stack_ix -= 1
-        stop_cond(q, cond_data) && continue
-        if q.is_divided
+        curr_stack_ix -= 1        
+        if !stop_cond(q, cond_data) && q.is_divided
             curr_stack_ix += 1
             @inbounds t.faststack[curr_stack_ix] = q.lxly
             curr_stack_ix += 1
