@@ -47,20 +47,9 @@ isfullleaf(q::SpatialTreeNode) = !q.is_empty
 stop_cond(q::SpatialTreeNode, ::Type{No_Cond_Data}) =
     stop_cond(q)
 
-map(h::SpatialTree, cond_data=No_Cond_Data) =
-    _map(h.head, cond_data)
-
-function clear!(h::SpatialTree; init=true)
-    h.head.is_divided = false
+function clear!(h::SpatialTree)
     h.head.is_empty = true
-    if init
-        h.head.point = eltype(h)()
-        @inbounds for i in 1:h.number_of_nodes_used
-            h.nodes[i].point = eltype(h)()
-            @inbounds h.nodes[i].is_empty = true
-            @inbounds h.nodes[i].is_divided = false
-        end
-    end
+    h.head.is_divided = false
     h.number_of_nodes_used = 1
     nothing
 end
@@ -131,5 +120,10 @@ end
 
 include("_octtrees.jl")
 include("_quadtrees.jl")
+
+map{T<:AbstractPoint2D}(h::QuadTree{T}) =
+    map(h, No_Cond_Data)
+map{T<:AbstractPoint3D}(h::OctTree{T}) =
+    map(h, No_Cond_Data)
 
 end # module

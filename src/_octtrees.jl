@@ -22,8 +22,18 @@ type OctTreeNode{T<:AbstractPoint3D} <: SpatialTreeNode
     lxhyhz::OctTreeNode{T}
     hxlyhz::OctTreeNode{T}
     hxhyhz::OctTreeNode{T}
-    OctTreeNode(minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, minz::Float64, maxz::Float64) = 
-        new(minx, maxx, miny, maxy, minz, maxz, (minx+maxx)/2, (miny+maxy)/2, (minz+maxz)/2, true, false, T())
+    function OctTreeNode(minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, minz::Float64, maxz::Float64)
+        n = new(minx, maxx, miny, maxy, minz, maxz, (minx+maxx)/2, (miny+maxy)/2, (minz+maxz)/2, true, false, T())
+        n.lxlylz = n
+        n.lxhylz = n
+        n.hxlylz = n
+        n.hxhylz = n
+        n.lxlyhz = n
+        n.lxhyhz = n
+        n.hxlyhz = n
+        n.hxhyhz = n
+        n
+    end
 end
 
 OctTreeNode{T<:AbstractPoint3D}(minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, minz::Float64, maxz::Float64, ::Type{T}) =
@@ -36,9 +46,10 @@ type OctTree{T<:AbstractPoint3D} <: SpatialTree
     head::OctTreeNode{T}
     number_of_nodes_used::Int64
     nodes::Array{OctTreeNode, 1}
+    faststack::Array{OctTreeNode{T}, 1}
     function OctTree(minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, minz::Float64, maxz::Float64, n::Int64=100000)
         nodes = OctTreeNode[OctTreeNode(minx, maxx, miny, maxy, minz, maxz, T) for i in 1:n]
-        new(nodes[1], 1, nodes)
+        new(nodes[1], 1, nodes, [OctTreeNode(T) for i in 1:10000])
     end
 end
 
@@ -48,7 +59,7 @@ OctTree(n::Int64) = OctTree(Point3D;n=n)
 OctTree() = OctTree(Point3D)
 eltype{T<:AbstractPoint3D}(::OctTree{T}) = T
 
- function initnode!{T<:AbstractPoint3D}(q::OctTreeNode{T}, minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, minz::Float64, maxz::Float64)
+ @inline function initnode!{T<:AbstractPoint3D}(q::OctTreeNode{T}, minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, minz::Float64, maxz::Float64)
     q.minx = minx
     q.maxx = maxx
     q.miny = miny
@@ -100,12 +111,13 @@ function divide!{T<:AbstractPoint3D}(h::OctTree{T}, q::OctTreeNode{T})
         const sq = _getsubnode(q, q.point)
         sq.is_empty = false
         q.is_empty = true
-        sq.point, q.point = q.point, sq.point
+        sq.point = q.point
+        q.point = T()
     end
     q
 end
 
-function _getsubnode{T<:AbstractPoint3D}(q::OctTreeNode{T}, point::T)
+@inline function _getsubnode{T<:AbstractPoint3D}(q::OctTreeNode{T}, point::T)
     const x=getx(point)
     const y=gety(point)
     const z=getz(point)
@@ -134,16 +146,31 @@ function _getsubnode{T<:AbstractPoint3D}(q::OctTreeNode{T}, point::T)
     end
 end
 
-function _map{T<:AbstractPoint3D}(q::OctTreeNode{T}, cond_data)
-    stop_cond(q, cond_data) && return
-    if q.is_divided
-        _map(q.lxlylz, cond_data)
-        _map(q.lxhylz, cond_data)
-        _map(q.hxlylz, cond_data)
-        _map(q.hxhylz, cond_data)
-        _map(q.lxlyhz, cond_data)
-        _map(q.lxhyhz, cond_data)
-        _map(q.hxlyhz, cond_data)
-        _map(q.hxhyhz, cond_data)
+@inline function map{T<:AbstractPoint3D}(t::OctTree{T}, cond_data)
+    curr_stack_ix = 1
+    t.faststack[1] = t.head
+    while curr_stack_ix > 0
+        @inbounds q = t.faststack[curr_stack_ix]
+        curr_stack_ix -= 1
+        stop_cond(q, cond_data) && continue
+        if q.is_divided
+            curr_stack_ix += 1
+            @inbounds t.faststack[curr_stack_ix] = q.lxlylz
+            curr_stack_ix += 1
+            @inbounds t.faststack[curr_stack_ix] = q.lxlyhz
+            curr_stack_ix += 1
+            @inbounds t.faststack[curr_stack_ix] = q.lxhylz
+            curr_stack_ix += 1
+            @inbounds t.faststack[curr_stack_ix] = q.lxhyhz
+            curr_stack_ix += 1
+            @inbounds t.faststack[curr_stack_ix] = q.hxlylz
+            curr_stack_ix += 1
+            @inbounds t.faststack[curr_stack_ix] = q.hxlyhz
+            curr_stack_ix += 1
+            @inbounds t.faststack[curr_stack_ix] = q.hxhylz
+            curr_stack_ix += 1
+            @inbounds t.faststack[curr_stack_ix] = q.hxhyhz
+        end
     end
 end
+

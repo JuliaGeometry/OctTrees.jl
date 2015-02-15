@@ -28,9 +28,10 @@ type QuadTree{T<:AbstractPoint2D} <: SpatialTree
 	head::QuadTreeNode{T}
 	number_of_nodes_used::Int64
 	nodes::Array{QuadTreeNode, 1}
+    faststack::Array{QuadTreeNode{T}, 1}
     function QuadTree(minx::Float64, maxx::Float64, miny::Float64, maxy::Float64, n::Int64=100000)
     	nodes = QuadTreeNode[QuadTreeNode(minx, maxx, miny, maxy, T) for i in 1:n]
-        new(nodes[1], 1, nodes)
+        new(nodes[1], 1, nodes, [QuadTreeNode(T) for i in 1:10000])
     end
 end
 
@@ -86,7 +87,7 @@ function divide!{T<:AbstractPoint2D}(h::QuadTree{T}, q::QuadTreeNode{T})
     q
 end
 
-function _getsubnode{T<:AbstractPoint2D}(q::QuadTreeNode{T}, point::T)
+@inline function _getsubnode{T<:AbstractPoint2D}(q::QuadTreeNode{T}, point::T)
     const x=getx(point)
     const y=gety(point)
     if x<q.midx
@@ -97,12 +98,22 @@ function _getsubnode{T<:AbstractPoint2D}(q::QuadTreeNode{T}, point::T)
     return q.hxhy
 end
 
-function _map{T<:AbstractPoint2D}(q::QuadTreeNode{T}, cond_data)
-    stop_cond(q, cond_data) && return
-    if q.is_divided
-        _map(q.lxly, cond_data)
-        _map(q.lxhy, cond_data)
-        _map(q.hxly, cond_data)
-        _map(q.hxhy, cond_data)
+@inline function map{T<:AbstractPoint2D}(t::QuadTree{T}, cond_data)
+    curr_stack_ix = 1
+    t.faststack[1] = t.head
+    while curr_stack_ix > 0
+        @inbounds q = t.faststack[curr_stack_ix]
+        curr_stack_ix -= 1
+        stop_cond(q, cond_data) && continue
+        if q.is_divided
+            curr_stack_ix += 1
+            @inbounds t.faststack[curr_stack_ix] = q.lxly
+            curr_stack_ix += 1
+            @inbounds t.faststack[curr_stack_ix] = q.lxly
+            curr_stack_ix += 1
+            @inbounds t.faststack[curr_stack_ix] = q.lxhy
+            curr_stack_ix += 1
+            @inbounds t.faststack[curr_stack_ix] = q.lxhy
+        end
     end
 end
