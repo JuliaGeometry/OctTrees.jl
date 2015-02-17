@@ -12,8 +12,14 @@ type QuadTreeNode{T<:AbstractPoint2D} <: SpatialTreeNode
     lxhy::QuadTreeNode{T}
     hxly::QuadTreeNode{T}
     hxhy::QuadTreeNode{T}
-    QuadTreeNode(r::Number, midx::Number, midy::Number) = 
-        new(r, midx, midy, true, false, T())
+    function QuadTreeNode(r::Number, midx::Number, midy::Number)
+        n = new(r, midx, midy, true, false, T())
+        n.lxly = n
+        n.lxhy = n
+        n.hxly = n
+        n.hxhy = n
+        n
+    end
 end
 
 QuadTreeNode{T<:AbstractPoint2D}(r::Number, midx::Number, midy::Number, ::Type{T}) =
@@ -99,7 +105,7 @@ end
     @inbounds t.faststack[1] = t.head
     while curr_stack_ix > 0
         @inbounds q = t.faststack[curr_stack_ix]
-        curr_stack_ix -= 1        
+        curr_stack_ix -= 1
         if !stop_cond(q, cond_data) && q.is_divided
             curr_stack_ix += 1
             @inbounds t.faststack[curr_stack_ix] = q.lxly

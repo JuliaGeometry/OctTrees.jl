@@ -116,7 +116,7 @@ end
     if x<q.midx
         # lx
         if y<q.midy
-            # ly    
+            # ly
             z<q.midz && return q.lxlylz
             return q.lxlyhz
         else
@@ -127,7 +127,7 @@ end
     else
         # hx
         if y<q.midy
-            # ly    
+            # ly
             z<q.midz && return q.hxlylz
             return q.hxlyhz
         else
@@ -164,4 +164,3 @@ end
         end
     end
 end
-
