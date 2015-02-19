@@ -2,6 +2,7 @@
 
 
 type QuadTreeNode{T<:AbstractPoint2D} <: SpatialTreeNode
+    id::Int64
     r::Float64
     midx::Float64
     midy::Float64
@@ -13,7 +14,7 @@ type QuadTreeNode{T<:AbstractPoint2D} <: SpatialTreeNode
     hxly::QuadTreeNode{T}
     hxhy::QuadTreeNode{T}
     function QuadTreeNode(r::Number, midx::Number, midy::Number)
-        n = new(r, midx, midy, true, false, T())
+        n = new(0, r, midx, midy, true, false, T())
         n.lxly = n
         n.lxhy = n
         n.hxly = n

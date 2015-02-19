@@ -2,6 +2,7 @@
 
 
 type OctTreeNode{T<:AbstractPoint3D} <: SpatialTreeNode
+    id::Int64
     r::Float64
     midx::Float64
     midy::Float64
@@ -18,7 +19,7 @@ type OctTreeNode{T<:AbstractPoint3D} <: SpatialTreeNode
     hxlyhz::OctTreeNode{T}
     hxhyhz::OctTreeNode{T}
     function OctTreeNode(r::Number, midx::Number, midy::Number, midz::Number)
-        n = new(r, midx, midy, midz, true, false, T())
+        n = new(0, r, midx, midy, midz, true, false, T())
         n.lxlylz = n
         n.lxhylz = n
         n.hxlylz = n
