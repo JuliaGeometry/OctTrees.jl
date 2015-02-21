@@ -4,6 +4,7 @@ using GeometricalPredicates
 
 export
     OctTree,
+    CompiledOctTree,
     QuadTree,
     insert!,
     clear!,
@@ -15,6 +16,7 @@ export
     modify,
     QuadTreeNode,
     OctTreeNode,
+    CompiledOctTreeNode,
     map,
     No_Cond_Data,
     No_Apply_Data,
@@ -119,6 +121,7 @@ end
 # specific stuff for Quad or Oct trees
 
 include("_octtrees.jl")
+include("_compiled_octtrees.jl")
 include("_quadtrees.jl")
 
 map{T<:AbstractPoint2D}(h::QuadTree{T}) =

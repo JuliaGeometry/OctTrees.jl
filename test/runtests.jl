@@ -422,3 +422,64 @@ for i in 1:q.number_of_nodes_used
 end
 @test tot == N
 
+#################################################################
+#
+#   Testing CompiledOctTrees
+#
+################################################################
+
+N = 10000
+q=OctTree()
+for i in 1:N
+	insert!(q, Point(rand(), rand(), rand()))
+end
+
+c = CompiledOctTree(N)
+compile(c, q)
+
+total_number_of_particles=0
+for i in 1:c.number_of_nodes_used
+    c.nodes[i].l > 0.0 && continue # not a leaf
+    total_number_of_particles += 1
+end
+@test total_number_of_particles == N
+
+for i in 1:q.number_of_nodes_used
+    @inbounds n = q.nodes[i]
+    if isemptyleaf(n)
+        @test n.id <= 0
+        continue
+     end
+    @test n.id > 0
+    @test n.id <= c.nodes_used
+    @test n.point._x == c.nodes[n.id]._x
+    @test n.point._y == c.nodes[n.id]._y
+    @test n.point._z == c.nodes[n.id]._z
+    if isleaf(n)
+        @test c.nodes[n.id].l == -1.0
+    else
+        @test 2.0*n.r == c.nodes[n.id].l
+    end
+end
+
+v=zeros(Int64, c.nodes_used)
+for i in 1:q.number_of_nodes_used
+    if q.nodes[i].id>0
+        v[q.nodes[i].id] = 1
+    end
+end
+@test sum(v) == c.number_of_nodes_used
+
+for i in 1:q.number_of_nodes_used
+    n = q.nodes[i]
+    !n.is_divided && continue
+
+    !isemptyleaf(n.lxlylz) && @test c.nodes[n.lxlylz.id].next == -1
+
+    !isemptyleaf(n.lxlylz) && !isemptyleaf(n.lxlyhz) &&
+        @test c.nodes[n.lxlyhz.id].next == n.lxlylz.id
+    !isemptyleaf(n.hxlyhz) && !isemptyleaf(n.hxlylz) &&
+        @test c.nodes[n.hxlyhz.id].next == n.hxlylz.id
+    !isemptyleaf(n.hxhyhz) && !isemptyleaf(n.hxhylz) &&
+        @test c.nodes[n.hxhyhz.id].next == n.hxhylz.id
+end
