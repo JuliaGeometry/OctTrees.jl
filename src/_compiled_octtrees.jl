@@ -5,25 +5,26 @@ immutable CompiledOctTreeNode{T<:AbstractPoint3D} <: SpatialTreeNode
 end
 
 CompiledOctTreeNode{T<:AbstractPoint3D}(point::T, l::Float64, next::Int64) =
-    CompiledOctTreeNode(point, l, next)
+    CompiledOctTreeNode{T}(point, l, next)
 
-@inline CompiledOctTreeNode{T<:AbstractPoint3D}(n::OctTreeNode{T}, ct::CompiledOctTree{T}) =
-        CompiledOctTreeNode(n.point, isleaf(n) ? -1.0 : 2.0*n.r, -1)
+@inline CompiledOctTreeNode{T<:AbstractPoint3D}(n::OctTreeNode{T}) =
+        CompiledOctTreeNode{T}(n.point, isleaf(n) ? -1.0 : 2.0*n.r, -1)
 
 @inline withnext{T<:AbstractPoint3D}(cn::CompiledOctTreeNode{T}, next::Int64) =
-    CompiledTreeNode(cn.point, cn.l, next)
+    CompiledOctTreeNode{T}(cn.point, cn.l, next)
 
 type CompiledOctTree{T<:AbstractPoint3D} <: SpatialTree
     nodes::SharedArray{CompiledOctTreeNode{T}, 1}
     number_of_nodes_used::Int64
     faststack::Array{Int64, 1}
-    CompiledOctTree(n::Int) = new(SharedArray(CompiledOctTreeNode{T}, 2*n), 0, Array(Int64, 10000))
 end
+CompiledOctTree{T<:AbstractPoint3D}(n::Int64, ::Type{T}) =
+    CompiledOctTree{T}(SharedArray(CompiledOctTreeNode{T}, 2*n), 0, Array(Int64, 10000))
 
 @inline function stop_cond{T<:AbstractPoint3D}(q::OctTreeNode{T}, ct::CompiledOctTree{T})
     isemptyleaf(q) && return true # empty node, nothing to do
     ct.number_of_nodes_used += 1
-    @inbounds ct.nodes[ct.number_of_nodes_used] = CompiledOctTreeNode(q, ct)
+    @inbounds ct.nodes[ct.number_of_nodes_used] = CompiledOctTreeNode(q)
     q.id = ct.number_of_nodes_used
     return false
 end

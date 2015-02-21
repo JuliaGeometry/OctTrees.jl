@@ -434,7 +434,7 @@ for i in 1:N
 	insert!(q, Point(rand(), rand(), rand()))
 end
 
-c = CompiledOctTree(N)
+c = CompiledOctTree(N, Point3D)
 compile(c, q)
 
 total_number_of_particles=0
@@ -451,10 +451,10 @@ for i in 1:q.number_of_nodes_used
         continue
      end
     @test n.id > 0
-    @test n.id <= c.nodes_used
-    @test n.point._x == c.nodes[n.id]._x
-    @test n.point._y == c.nodes[n.id]._y
-    @test n.point._z == c.nodes[n.id]._z
+    @test n.id <= c.number_of_nodes_used
+    @test n.point._x == c.nodes[n.id].point._x
+    @test n.point._y == c.nodes[n.id].point._y
+    @test n.point._z == c.nodes[n.id].point._z
     if isleaf(n)
         @test c.nodes[n.id].l == -1.0
     else
@@ -462,7 +462,7 @@ for i in 1:q.number_of_nodes_used
     end
 end
 
-v=zeros(Int64, c.nodes_used)
+v=zeros(Int64, c.number_of_nodes_used)
 for i in 1:q.number_of_nodes_used
     if q.nodes[i].id>0
         v[q.nodes[i].id] = 1
