@@ -51,6 +51,7 @@ stop_cond(q::SpatialTreeNode, ::Type{No_Cond_Data}) =
     stop_cond(q)
 
 function clear!(h::SpatialTree)
+    h.head.id = 0
     h.head.is_empty = true
     h.head.is_divided = false
     h.number_of_nodes_used = 1
@@ -76,7 +77,7 @@ end
 # modify(q::SpatialTreeNode, p::AbstractPoint, ::Type{Modify}) =
 #     modify(q,p)
 modify() = error("not implemented!")
-@inline function insert!(h::SpatialTree, point::AbstractPoint, ::Type{Modify})
+function insert!(h::SpatialTree, point::AbstractPoint, ::Type{Modify})
     q = h.head
     while q.is_divided
         modify(q, point)
@@ -94,7 +95,7 @@ modify() = error("not implemented!")
     q
 end
 
-@inline function insert!(h::SpatialTree, point::AbstractPoint, additional_data)
+function insert!(h::SpatialTree, point::AbstractPoint, additional_data)
     q = h.head
     while q.is_divided
         modify(q, point, additional_data)
@@ -114,8 +115,8 @@ end
 
 function insert!{T<:AbstractPoint}(h::SpatialTree, points::Array{T,1}, ::Type{Modify})
     hilbertsort!(points)
-    @inbounds for p in points
-        @inbounds insert!(h, p, Modify)
+    for p in points
+        insert!(h, p, Modify)
     end
 end
 

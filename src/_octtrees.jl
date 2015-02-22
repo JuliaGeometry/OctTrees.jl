@@ -63,9 +63,10 @@ eltype{T<:AbstractPoint3D}(::OctTree{T}) = T
     q.midz = midz
     q.is_empty = true
     q.is_divided = false
+    q.id = 0
 end
 
-function divide!{T<:AbstractPoint3D}(h::OctTree{T}, q::OctTreeNode{T})
+@inline function divide!{T<:AbstractPoint3D}(h::OctTree{T}, q::OctTreeNode{T})
     # make sure we have enough nodes
     if length(h.nodes) - h.number_of_nodes_used < 8
         new_size = length(h.nodes)+(length(h.nodes) >>> 1)
@@ -76,14 +77,14 @@ function divide!{T<:AbstractPoint3D}(h::OctTree{T}, q::OctTreeNode{T})
     end
 
     # populate new nodes
-    @inbounds q.lxlylz = h.nodes[h.number_of_nodes_used+1]
-    @inbounds q.lxhylz = h.nodes[h.number_of_nodes_used+2]
-    @inbounds q.hxlylz = h.nodes[h.number_of_nodes_used+3]
-    @inbounds q.hxhylz = h.nodes[h.number_of_nodes_used+4]
-    @inbounds q.lxlyhz = h.nodes[h.number_of_nodes_used+5]
-    @inbounds q.lxhyhz = h.nodes[h.number_of_nodes_used+6]
-    @inbounds q.hxlyhz = h.nodes[h.number_of_nodes_used+7]
-    @inbounds q.hxhyhz = h.nodes[h.number_of_nodes_used+8]
+    q.lxlylz = h.nodes[h.number_of_nodes_used+1]
+    q.lxhylz = h.nodes[h.number_of_nodes_used+2]
+    q.hxlylz = h.nodes[h.number_of_nodes_used+3]
+    q.hxhylz = h.nodes[h.number_of_nodes_used+4]
+    q.lxlyhz = h.nodes[h.number_of_nodes_used+5]
+    q.lxhyhz = h.nodes[h.number_of_nodes_used+6]
+    q.hxlyhz = h.nodes[h.number_of_nodes_used+7]
+    q.hxhyhz = h.nodes[h.number_of_nodes_used+8]
 
     # set new nodes properties (dimensions etc.)
     const r2 = q.r/2.0
@@ -139,29 +140,29 @@ end
     end
 end
 
-@inline function map{T<:AbstractPoint3D}(t::OctTree{T}, cond_data)
+function map{T<:AbstractPoint3D}(t::OctTree{T}, cond_data)
     curr_stack_ix = 1
-    @inbounds t.faststack[1] = t.head
-    while curr_stack_ix > 0
-        @inbounds q = t.faststack[curr_stack_ix]
+    t.faststack[1] = t.head
+    @inbounds while curr_stack_ix > 0
+        q = t.faststack[curr_stack_ix]
         curr_stack_ix -= 1
         if !stop_cond(q, cond_data) && q.is_divided
             curr_stack_ix += 1
-            @inbounds t.faststack[curr_stack_ix] = q.lxlylz
+            t.faststack[curr_stack_ix] = q.lxlylz
             curr_stack_ix += 1
-            @inbounds t.faststack[curr_stack_ix] = q.lxlyhz
+            t.faststack[curr_stack_ix] = q.lxlyhz
             curr_stack_ix += 1
-            @inbounds t.faststack[curr_stack_ix] = q.lxhylz
+            t.faststack[curr_stack_ix] = q.lxhylz
             curr_stack_ix += 1
-            @inbounds t.faststack[curr_stack_ix] = q.lxhyhz
+            t.faststack[curr_stack_ix] = q.lxhyhz
             curr_stack_ix += 1
-            @inbounds t.faststack[curr_stack_ix] = q.hxlylz
+            t.faststack[curr_stack_ix] = q.hxlylz
             curr_stack_ix += 1
-            @inbounds t.faststack[curr_stack_ix] = q.hxlyhz
+            t.faststack[curr_stack_ix] = q.hxlyhz
             curr_stack_ix += 1
-            @inbounds t.faststack[curr_stack_ix] = q.hxhylz
+            t.faststack[curr_stack_ix] = q.hxhylz
             curr_stack_ix += 1
-            @inbounds t.faststack[curr_stack_ix] = q.hxhyhz
+            t.faststack[curr_stack_ix] = q.hxhyhz
         end
     end
 end

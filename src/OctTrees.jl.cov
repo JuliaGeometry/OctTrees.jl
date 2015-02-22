@@ -47,7 +47,7 @@
         -     h.number_of_nodes_used = 1
         -     if init
         -         h.head.point = eltype(h)()
-        -         @inbounds for i in 1:length(h.nodes)
+        -         for i in 1:length(h.nodes)
         -             h.nodes[i].point = eltype(h)()
         -             h.nodes[i].is_empty = true
         -             h.nodes[i].is_divided = false

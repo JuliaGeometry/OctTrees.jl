@@ -46,7 +46,7 @@ QuadTree(n::Int64) = QuadTree(Point2D;n=n)
 QuadTree() = QuadTree(Point2D)
 eltype{T<:AbstractPoint2D}(::QuadTree{T}) = T
 
-function initnode!{T<:AbstractPoint2D}(q::QuadTreeNode{T}, r::Number, midx::Number, midy::Number)
+@inline function initnode!{T<:AbstractPoint2D}(q::QuadTreeNode{T}, r::Number, midx::Number, midy::Number)
     q.r = r
     q.midx = midx
     q.midy = midy
@@ -54,7 +54,7 @@ function initnode!{T<:AbstractPoint2D}(q::QuadTreeNode{T}, r::Number, midx::Numb
     q.is_divided = false
 end
 
-function divide!{T<:AbstractPoint2D}(h::QuadTree{T}, q::QuadTreeNode{T})
+@inline function divide!{T<:AbstractPoint2D}(h::QuadTree{T}, q::QuadTreeNode{T})
     # make sure we have enough nodes
     if length(h.nodes) - h.number_of_nodes_used < 4
     	new_size = length(h.nodes)+(length(h.nodes) >>> 1)
@@ -65,10 +65,10 @@ function divide!{T<:AbstractPoint2D}(h::QuadTree{T}, q::QuadTreeNode{T})
     end
 
     # populate new nodes
-    @inbounds q.lxly = h.nodes[h.number_of_nodes_used+1]
-    @inbounds q.lxhy = h.nodes[h.number_of_nodes_used+2]
-    @inbounds q.hxly = h.nodes[h.number_of_nodes_used+3]
-    @inbounds q.hxhy = h.nodes[h.number_of_nodes_used+4]
+    q.lxly = h.nodes[h.number_of_nodes_used+1]
+    q.lxhy = h.nodes[h.number_of_nodes_used+2]
+    q.hxly = h.nodes[h.number_of_nodes_used+3]
+    q.hxhy = h.nodes[h.number_of_nodes_used+4]
 
     # set new nodes properties (dimensions etc.)
     const r2 = q.r/2
@@ -101,21 +101,21 @@ end
     return q.hxhy
 end
 
-@inline function map{T<:AbstractPoint2D}(t::QuadTree{T}, cond_data)
+function map{T<:AbstractPoint2D}(t::QuadTree{T}, cond_data)
     curr_stack_ix = 1
-    @inbounds t.faststack[1] = t.head
-    while curr_stack_ix > 0
-        @inbounds q = t.faststack[curr_stack_ix]
+    t.faststack[1] = t.head
+    @inbounds while curr_stack_ix > 0
+        q = t.faststack[curr_stack_ix]
         curr_stack_ix -= 1
         if !stop_cond(q, cond_data) && q.is_divided
             curr_stack_ix += 1
-            @inbounds t.faststack[curr_stack_ix] = q.lxly
+            t.faststack[curr_stack_ix] = q.lxly
             curr_stack_ix += 1
-            @inbounds t.faststack[curr_stack_ix] = q.lxly
+            t.faststack[curr_stack_ix] = q.lxly
             curr_stack_ix += 1
-            @inbounds t.faststack[curr_stack_ix] = q.lxhy
+            t.faststack[curr_stack_ix] = q.lxhy
             curr_stack_ix += 1
-            @inbounds t.faststack[curr_stack_ix] = q.lxhy
+            t.faststack[curr_stack_ix] = q.lxhy
         end
     end
 end
