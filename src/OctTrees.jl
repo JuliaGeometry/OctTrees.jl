@@ -28,7 +28,7 @@ export
     isfullleaf,
     divide!,
     initnode!,
-    compile
+    compile!
 
 # for compatibility reasons
 if VERSION < v"0.4-"

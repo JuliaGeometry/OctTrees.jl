@@ -29,7 +29,7 @@ CompiledOctTree{T<:AbstractPoint3D}(n::Int64, ::Type{T}) =
     return false
 end
 
-function compile{T<:AbstractPoint3D}(ct::CompiledOctTree{T}, t::OctTree{T})
+function compile!{T<:AbstractPoint3D}(ct::CompiledOctTree{T}, t::OctTree{T})
     ct.number_of_nodes_used = 0
     map(t, ct)
 

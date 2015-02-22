@@ -435,7 +435,7 @@ for i in 1:N
 end
 
 c = CompiledOctTree(N, Point3D)
-compile(c, q)
+compile!(c, q)
 
 total_number_of_particles=0
 for i in 1:c.number_of_nodes_used
