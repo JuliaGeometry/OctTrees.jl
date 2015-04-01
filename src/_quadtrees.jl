@@ -46,7 +46,7 @@ QuadTree(n::Int64) = QuadTree(Point2D;n=n)
 QuadTree() = QuadTree(Point2D)
 eltype{T<:AbstractPoint2D}(::QuadTree{T}) = T
 
-@inline function initnode!{T<:AbstractPoint2D}(q::QuadTreeNode{T}, r::Number, midx::Number, midy::Number)
+function initnode!{T<:AbstractPoint2D}(q::QuadTreeNode{T}, r::Number, midx::Number, midy::Number)
     q.r = r
     q.midx = midx
     q.midy = midy
@@ -54,7 +54,7 @@ eltype{T<:AbstractPoint2D}(::QuadTree{T}) = T
     q.is_divided = false
 end
 
-@inline function divide!{T<:AbstractPoint2D}(h::QuadTree{T}, q::QuadTreeNode{T})
+function divide!{T<:AbstractPoint2D}(h::QuadTree{T}, q::QuadTreeNode{T})
     # make sure we have enough nodes
     if length(h.nodes) - h.number_of_nodes_used < 4
     	new_size = length(h.nodes)+(length(h.nodes) >>> 1)
@@ -90,7 +90,7 @@ end
     q
 end
 
-@inline function _getsubnode{T<:AbstractPoint2D}(q::QuadTreeNode{T}, point::T)
+function _getsubnode{T<:AbstractPoint2D}(q::QuadTreeNode{T}, point::T)
     const x=getx(point)
     const y=gety(point)
     if x<q.midx

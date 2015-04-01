@@ -114,7 +114,7 @@ function insert!(h::SpatialTree, point::AbstractPoint, additional_data)
 end
 
 function insert!{T<:AbstractPoint}(h::SpatialTree, points::AbstractArray{T,1}, ::Type{Modify})
-    hilbertsort!(points)
+    #hilbertsort!(points)
     for p in points
         insert!(h, p, Modify)
     end

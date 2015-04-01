@@ -56,7 +56,7 @@ OctTree(n::Int64) = OctTree(Point3D;n=n)
 OctTree() = OctTree(Point3D)
 eltype{T<:AbstractPoint3D}(::OctTree{T}) = T
 
-@inline function initnode!{T<:AbstractPoint3D}(q::OctTreeNode{T}, r::Number, midx::Number, midy::Number, midz::Number)
+function initnode!{T<:AbstractPoint3D}(q::OctTreeNode{T}, r::Number, midx::Number, midy::Number, midz::Number)
     q.r = r
     q.midx = midx
     q.midy = midy
@@ -66,7 +66,7 @@ eltype{T<:AbstractPoint3D}(::OctTree{T}) = T
     q.id = 0
 end
 
-@inline function divide!{T<:AbstractPoint3D}(h::OctTree{T}, q::OctTreeNode{T})
+function divide!{T<:AbstractPoint3D}(h::OctTree{T}, q::OctTreeNode{T})
     # make sure we have enough nodes
     if length(h.nodes) - h.number_of_nodes_used < 8
         new_size = length(h.nodes)+(length(h.nodes) >>> 1)
@@ -111,7 +111,7 @@ end
     q
 end
 
-@inline function _getsubnode{T<:AbstractPoint3D}(q::OctTreeNode{T}, point::T)
+function _getsubnode{T<:AbstractPoint3D}(q::OctTreeNode{T}, point::T)
     const x=getx(point)
     const y=gety(point)
     const z=getz(point)
