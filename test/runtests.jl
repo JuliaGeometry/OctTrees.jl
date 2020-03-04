@@ -1,11 +1,8 @@
-# make sure we use the master branch
-Pkg.checkout("GeometricalPredicates")
-
 using OctTrees
 import OctTrees: modify, stop_cond
 using GeometricalPredicates
 import GeometricalPredicates:getx, gety, getz
-using Base.Test
+using Test
 
 
 ##################################################################
