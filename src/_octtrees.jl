@@ -18,7 +18,7 @@ mutable struct OctTreeNode{T<:AbstractPoint3D} <: SpatialTreeNode
     lxhyhz::OctTreeNode{T}
     hxlyhz::OctTreeNode{T}
     hxhyhz::OctTreeNode{T}
-    function OctTreeNode(r::Number, midx::Number, midy::Number, midz::Number)
+    function OctTreeNode{T}(r::Number, midx::Number, midy::Number, midz::Number) where T <:AbstractPoint3D
         n = new(0, r, midx, midy, midz, true, false, T())
         n.lxlylz = n
         n.lxhylz = n
@@ -32,10 +32,8 @@ mutable struct OctTreeNode{T<:AbstractPoint3D} <: SpatialTreeNode
     end
 end
 
-OctTreeNode{T<:AbstractPoint3D}(r::Number, midx::Number, midy::Number, midz::Number, ::Type{T}) =
-    OctTreeNode{T}(r, midx, midy, midz)
-OctTreeNode{T<:AbstractPoint3D}(::Type{T}) =
-    OctTreeNode(0.5, 0.5, 0.5, 0.5, T)
+OctTreeNode{T}(r::Number, midx::Number, midy::Number, midz::Number, ::Type{T}) where T <:AbstractPoint3D = OctTreeNode{T}(r, midx, midy, midz)
+OctTreeNode{T}(::Type{T}) where T <:AbstractPoint3D = OctTreeNode(0.5, 0.5, 0.5, 0.5, T)
 OctTreeNode() = OctTreeNode(Point3D)
 
 mutable struct OctTree{T<:AbstractPoint3D} <: SpatialTree
@@ -43,20 +41,19 @@ mutable struct OctTree{T<:AbstractPoint3D} <: SpatialTree
     number_of_nodes_used::Int64
     nodes::Array{OctTreeNode, 1}
     faststack::Array{OctTreeNode{T}, 1}
-    function OctTree(r::Number, midx::Number, midy::Number, midz::Number, n::Int64=100000)
+    function OctTree{T}(r::Number, midx::Number, midy::Number, midz::Number, n::Int64=100000) where T <:AbstractPoint3D
         nodes = OctTreeNode[OctTreeNode(r, midx, midy, midz, T) for i in 1:n]
         new(nodes[1], 1, nodes, [OctTreeNode(T) for i in 1:10000])
     end
 end
 
-OctTree{T<:AbstractPoint3D}(r::Number, midx::Number, midy::Number, midz::Number, ::Type{T};n=1000) =
-    OctTree{T}(r, midx, midy, midz, n)
-OctTree{T<:AbstractPoint3D}(::Type{T};n=10000) = OctTree(0.5, 0.5, 0.5, 0.5, T; n=n)
-OctTree(n::Int64) = OctTree(Point3D;n=n)
+OctTree{T}(r::Number, midx::Number, midy::Number, midz::Number, ::Type{T};n=1000) where T <:AbstractPoint3D = OctTree{T}(r, midx, midy, midz, n)
+OctTree{T}(::Type{T};n=10000) where T <:AbstractPoint3D = OctTree(0.5, 0.5, 0.5, 0.5, T; n=n)
+OctTree(n::Int64) = OctTree(Point3D; n=n)
 OctTree() = OctTree(Point3D)
-eltype{T<:AbstractPoint3D}(::OctTree{T}) = T
+Base.eltype(::OctTree{T}) where T <:AbstractPoint3D = T
 
-function initnode!{T<:AbstractPoint3D}(q::OctTreeNode{T}, r::Number, midx::Number, midy::Number, midz::Number)
+function initnode!(q::OctTreeNode{T}, r::Number, midx::Number, midy::Number, midz::Number) where T <:AbstractPoint3D
     q.r = r
     q.midx = midx
     q.midy = midy
@@ -66,7 +63,7 @@ function initnode!{T<:AbstractPoint3D}(q::OctTreeNode{T}, r::Number, midx::Numbe
     q.id = 0
 end
 
-function divide!{T<:AbstractPoint3D}(h::OctTree{T}, q::OctTreeNode{T})
+function divide!(h::OctTree{T}, q::OctTreeNode{T}) where T<:AbstractPoint3D
     # make sure we have enough nodes
     if length(h.nodes) - h.number_of_nodes_used < 8
         new_size = length(h.nodes)+(length(h.nodes) >>> 1)
@@ -87,7 +84,7 @@ function divide!{T<:AbstractPoint3D}(h::OctTree{T}, q::OctTreeNode{T})
     q.hxhyhz = h.nodes[h.number_of_nodes_used+8]
 
     # set new nodes properties (dimensions etc.)
-    const r2 = q.r/2.0
+    r2 = q.r/2.0
     initnode!(q.lxlylz, r2, q.midx-r2, q.midy-r2, q.midz-r2)
     initnode!(q.lxhylz, r2, q.midx-r2, q.midy+r2, q.midz-r2)
     initnode!(q.hxlylz, r2, q.midx+r2, q.midy-r2, q.midz-r2)
@@ -102,7 +99,7 @@ function divide!{T<:AbstractPoint3D}(h::OctTree{T}, q::OctTreeNode{T})
     q.is_divided = true
     if !q.is_empty
         # move point in parent node to child node
-        const sq = _getsubnode(q, q.point)
+        sq = _getsubnode(q, q.point)
         sq.is_empty = false
         q.is_empty = true
         sq.point = q.point
@@ -111,10 +108,10 @@ function divide!{T<:AbstractPoint3D}(h::OctTree{T}, q::OctTreeNode{T})
     q
 end
 
-function _getsubnode{T<:AbstractPoint3D}(q::OctTreeNode{T}, point::T)
-    const x=getx(point)
-    const y=gety(point)
-    const z=getz(point)
+function _getsubnode(q::OctTreeNode{T}, point::T) where T <:AbstractPoint3D
+    x=getx(point)
+    y=gety(point)
+    z=getz(point)
     if x<q.midx
         # lx
         if y<q.midy
@@ -140,7 +137,7 @@ function _getsubnode{T<:AbstractPoint3D}(q::OctTreeNode{T}, point::T)
     end
 end
 
-function map{T<:AbstractPoint3D}(t::OctTree{T}, cond_data)
+function map(t::OctTree{T}, cond_data) where T <: AbstractPoint3D
     curr_stack_ix = 1
     t.faststack[1] = t.head
     @inbounds while curr_stack_ix > 0

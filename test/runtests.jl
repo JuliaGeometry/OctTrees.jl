@@ -13,20 +13,20 @@ using Test
 
 q=QuadTree(100)
 
-insert!(q, Point(0.1, 0.1))
-insert!(q, Point(0.9, 0.9))
+OctTrees.insert!(q, Point(0.1, 0.1))
+OctTrees.insert!(q, Point(0.9, 0.9))
 
 @test q.number_of_nodes_used == 5
 
 q=QuadTree(100)
 
-insert!(q, Point(0.1, 0.1))
-insert!(q, Point(0.9, 0.9))
+OctTrees.insert!(q, Point(0.1, 0.1))
+OctTrees.insert!(q, Point(0.9, 0.9))
 
 tot=0
 for i in 1:q.number_of_nodes_used
     !isfullleaf(q.nodes[i]) && continue
-    tot+=1
+    global tot+=1
 end
 @test tot == 2
 
@@ -42,7 +42,7 @@ end
 @test q.head.is_divided
 @test q.head.is_empty
 
-insert!(q, Point(0.55, 0.9))
+OctTrees.insert!(q, Point(0.55, 0.9))
 
 @test !q.head.hxhy.hxhy.is_divided
 @test !q.head.hxhy.hxhy.is_empty
@@ -53,7 +53,7 @@ insert!(q, Point(0.55, 0.9))
 @test !q.head.hxhy.hxly.is_divided
 @test q.head.hxhy.hxly.is_empty
 
-insert!(q, Point(0.9, 0.55))
+OctTrees.insert!(q, Point(0.9, 0.55))
 
 @test !q.head.hxhy.hxhy.is_divided
 @test !q.head.hxhy.hxhy.is_empty
@@ -80,7 +80,7 @@ q=QuadTree(Part; n=4000100)
 pa = [Part(rand(), rand()) for i in 1:1000000]
 function insert_unsorted_array(pa::Array{Part,1}, q::QuadTree)
 	for p in pa
-		insert!(q, p)
+		OctTrees.insert!(q, p)
 	end
 end
 
@@ -92,7 +92,7 @@ end
 pa = [Point(rand(), rand()) for i in 1:1000000]
 function insert_unsorted_array(pa::Array{Point2D,1}, q::QuadTree)
 	for p in pa
-		insert!(q, p)
+		OctTrees.insert!(q, p)
 	end
 end
 q=QuadTree(4000100)
@@ -117,22 +117,22 @@ gety(p::Particle) = p._y
 q=QuadTree(Particle; n=100)
 
 function modify(q::QuadTreeNode{Particle}, p::Particle)
-	const total_mass = q.point._m + p._m
-	const newx = (q.point._x*q.point._m + p._x)/total_mass
-	const newy = (q.point._y*q.point._m + p._y)/total_mass
+	total_mass = q.point._m + p._m
+	newx = (q.point._x*q.point._m + p._x)/total_mass
+	newy = (q.point._y*q.point._m + p._y)/total_mass
 	q.point = Particle(newx, newy, total_mass)
 end
 
 @test q.head.is_empty == true
 
-insert!(q, Particle(0.1, 0.1), Modify)
+OctTrees.insert!(q, Particle(0.1, 0.1), Modify)
 
 @test q.head.is_empty == false
 @test q.head.point._m == 1.0
 @test q.head.point._x == 0.1
 @test q.head.point._y == 0.1
 
-insert!(q, Particle(0.9, 0.9), Modify)
+OctTrees.insert!(q, Particle(0.9, 0.9), Modify)
 
 @test q.head.is_empty == true
 @test q.head.point._m == 2.0
@@ -154,7 +154,7 @@ function stop_cond(q::QuadTreeNode{Particle}, cond_data::Int64)
 	true
 end
 
-map(q, 1)
+OctTrees.map(q, 1)
 
 @test cond_satisfied == true
 
@@ -167,7 +167,7 @@ function stop_cond(q::QuadTreeNode{Particle}, cond_data::Float64)
 	true
 end
 
-map(q, 1.0)
+OctTrees.map(q, 1.0)
 
 @test float_cond_satisfied == true
 
@@ -179,7 +179,7 @@ function stop_cond(q::QuadTreeNode{Particle})
 	true
 end
 
-map(q)
+OctTrees.map(q)
 
 @test nodata_cond_satisfied == true
 
@@ -190,20 +190,20 @@ function modify(q::QuadTreeNode{Particle}, p::Particle, i::Int64)
 	q.point = Particle(q.point._x, q.point._y, 7.0)
 end
 
-insert!(q, Particle(0.1, 0.1), 1)
-insert!(q, Particle(0.9, 0.9), 1)
+OctTrees.insert!(q, Particle(0.1, 0.1), 1)
+OctTrees.insert!(q, Particle(0.9, 0.9), 1)
 @test q.head.point._m == 7.0
 
 
 N = 10000
 q=QuadTree()
 for i in 1:N
-	insert!(q, Point(rand(), rand()))
+	OctTrees.insert!(q, Point(rand(), rand()))
 end
 tot=0
 for i in 1:q.number_of_nodes_used
     !isfullleaf(q.nodes[i]) && continue
-    tot+=1
+    global tot+=1
 end
 @test tot == N
 
@@ -214,14 +214,14 @@ end
 #
 ##################################################################
 
-q=OctTree(100)
+q = OctTree(100)
 
-insert!(q, Point(0.1, 0.1, 0.1))
-insert!(q, Point(0.9, 0.9, 0.9))
+OctTrees.insert!(q, Point(0.1, 0.1, 0.1))
+OctTrees.insert!(q, Point(0.9, 0.9, 0.9))
 
 @test q.number_of_nodes_used == 9
 
-q=OctTree(100)
+q = OctTree(100)
 
 insert!(q, Point(0.1, 0.1, 0.1))
 insert!(q, Point(0.9, 0.9, 0.9))
