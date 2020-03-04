@@ -32,8 +32,8 @@ mutable struct OctTreeNode{T<:AbstractPoint3D} <: SpatialTreeNode
     end
 end
 
-OctTreeNode{T}(r::Number, midx::Number, midy::Number, midz::Number, ::Type{T}) where T <:AbstractPoint3D = OctTreeNode{T}(r, midx, midy, midz)
-OctTreeNode{T}(::Type{T}) where T <:AbstractPoint3D = OctTreeNode(0.5, 0.5, 0.5, 0.5, T)
+OctTreeNode(r::Number, midx::Number, midy::Number, midz::Number, ::Type{T}) where T <:AbstractPoint3D = OctTreeNode{T}(r, midx, midy, midz)
+OctTreeNode(::Type{T}) where T <:AbstractPoint3D = OctTreeNode(0.5, 0.5, 0.5, 0.5, T)
 OctTreeNode() = OctTreeNode(Point3D)
 
 mutable struct OctTree{T<:AbstractPoint3D} <: SpatialTree
@@ -47,8 +47,8 @@ mutable struct OctTree{T<:AbstractPoint3D} <: SpatialTree
     end
 end
 
-OctTree{T}(r::Number, midx::Number, midy::Number, midz::Number, ::Type{T};n=1000) where T <:AbstractPoint3D = OctTree{T}(r, midx, midy, midz, n)
-OctTree{T}(::Type{T};n=10000) where T <:AbstractPoint3D = OctTree(0.5, 0.5, 0.5, 0.5, T; n=n)
+OctTree(r::Number, midx::Number, midy::Number, midz::Number, ::Type{T};n=1000) where T <:AbstractPoint3D = OctTree{T}(r, midx, midy, midz, n)
+OctTree(::Type{T};n=10000) where T <: AbstractPoint3D = OctTree(0.5, 0.5, 0.5, 0.5, T; n=n)
 OctTree(n::Int64) = OctTree(Point3D; n=n)
 OctTree() = OctTree(Point3D)
 Base.eltype(::OctTree{T}) where T <:AbstractPoint3D = T
