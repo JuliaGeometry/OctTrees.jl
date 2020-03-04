@@ -1,7 +1,7 @@
 # specific stuff for quad trees
 
 
-type QuadTreeNode{T<:AbstractPoint2D} <: SpatialTreeNode
+mutable struct QuadTreeNode{T<:AbstractPoint2D} <: SpatialTreeNode
     id::Int64
     r::Float64
     midx::Float64
@@ -28,7 +28,7 @@ QuadTreeNode{T<:AbstractPoint2D}(r::Number, midx::Number, midy::Number, ::Type{T
 QuadTreeNode{T<:AbstractPoint2D}(::Type{T}) = QuadTreeNode(0.5, 0.5, 0.5, T)
 QuadTreeNode() = QuadTreeNode(Point2D);
 
-type QuadTree{T<:AbstractPoint2D} <: SpatialTree
+mutable struct QuadTree{T<:AbstractPoint2D} <: SpatialTree
 	head::QuadTreeNode{T}
 	number_of_nodes_used::Int64
 	nodes::Array{QuadTreeNode, 1}

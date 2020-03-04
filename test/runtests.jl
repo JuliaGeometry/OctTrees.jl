@@ -69,7 +69,7 @@ insert!(q, Point(0.9, 0.55))
 
 ##################################################################
 
-immutable Part <: AbstractPoint2D
+struct Part <: AbstractPoint2D
 	_x::Float64
 	_y::Float64
 	Part(x,y) = new(x,y)
@@ -106,7 +106,7 @@ clear!(q)
 
 
 # a massive particle
-immutable Particle <: AbstractPoint2D
+struct Particle <: AbstractPoint2D
 	_x::Float64
 	_y::Float64
 	_m::Float64
@@ -280,7 +280,7 @@ insert!(q, Point(0.9, 0.55, 0.9))
 
 ##################################################################
 
-immutable Part3D <: AbstractPoint3D
+struct Part3D <: AbstractPoint3D
 	_x::Float64
 	_y::Float64
 	_z::Float64
@@ -319,7 +319,7 @@ clear!(q)
 
 
 # a massive particle
-immutable Particle3D <: AbstractPoint3D
+struct Particle3D <: AbstractPoint3D
 	_x::Float64
 	_y::Float64
 	_z::Float64

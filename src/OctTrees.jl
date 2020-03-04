@@ -37,11 +37,11 @@ end
 
 # General stuff good for both Quad and Oct trees
 
-abstract SpatialTree
-abstract SpatialTreeNode
+mutable struct SpatialTree end
+mutable struct SpatialTreeNode end
 
-immutable Modify end
-immutable No_Cond_Data end
+struct Modify end
+struct No_Cond_Data end
 
 isleaf(q::SpatialTreeNode) = !q.is_divided
 isemptyleaf(q::SpatialTreeNode) = !q.is_divided && q.is_empty

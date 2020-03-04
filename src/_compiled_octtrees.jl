@@ -1,4 +1,4 @@
-immutable CompiledOctTreeNode{T<:AbstractPoint3D} <: SpatialTreeNode
+struct CompiledOctTreeNode{T<:AbstractPoint3D} <: SpatialTreeNode
     point::T
     l::Float64
     next::Int64

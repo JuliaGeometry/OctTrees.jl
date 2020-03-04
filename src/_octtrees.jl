@@ -1,7 +1,7 @@
 # specific stuff for Oct trees
 
 
-type OctTreeNode{T<:AbstractPoint3D} <: SpatialTreeNode
+mutable struct OctTreeNode{T<:AbstractPoint3D} <: SpatialTreeNode
     id::Int64
     r::Float64
     midx::Float64
@@ -38,7 +38,7 @@ OctTreeNode{T<:AbstractPoint3D}(::Type{T}) =
     OctTreeNode(0.5, 0.5, 0.5, 0.5, T)
 OctTreeNode() = OctTreeNode(Point3D)
 
-type OctTree{T<:AbstractPoint3D} <: SpatialTree
+mutable struct OctTree{T<:AbstractPoint3D} <: SpatialTree
     head::OctTreeNode{T}
     number_of_nodes_used::Int64
     nodes::Array{OctTreeNode, 1}
