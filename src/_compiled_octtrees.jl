@@ -6,8 +6,7 @@ end
 
 CompiledOctTreeNode(point::T, l::Float64, next::Int64) where T <: AbstractPoint3D = CompiledOctTreeNode{T}(point, l, next)
 
-CompiledOctTreeNode(n::OctTreeNode{T}) where T <: AbstractPoint3D =
-        CompiledOctTreeNode{T}(n.point, isleaf(n) ? -1.0 : 2.0*n.r, -1)
+CompiledOctTreeNode(n::OctTreeNode{T}) where T <: AbstractPoint3D = CompiledOctTreeNode{T}(n.point, isleaf(n) ? -1.0 : 2.0*n.r, -1)
 
 withnext(cn::CompiledOctTreeNode{T}, next::Int64) where T<:AbstractPoint3D = CompiledOctTreeNode{T}(cn.point, cn.l, next)
 
@@ -16,8 +15,9 @@ mutable struct CompiledOctTree{T<:AbstractPoint3D} <: SpatialTree
     number_of_nodes_used::Int64
     faststack::Array{Int64, 1}
 end
+
 CompiledOctTree(n::Int64, ::Type{T}) where T <: AbstractPoint3D =
-    CompiledOctTree{T}(SharedArray(CompiledOctTreeNode{T}, 2*n), 0, Array(Int64, 100000))
+    CompiledOctTree{T}(SharedArray{CompiledOctTreeNode{T}}(2*n), 0, Array{Int64}(undef,100000))
 
 function stop_cond(q::OctTreeNode{T}, ct::CompiledOctTree{T}) where T <: AbstractPoint3D
     isemptyleaf(q) && return true # nothing to do
@@ -30,7 +30,7 @@ end
 function compile!(ct::CompiledOctTree{T}, t::OctTree{T}) where T<:AbstractPoint3D
     ct.number_of_nodes_used = 0
     map(t, ct)
-    childs = Array(OctTreeNode{T}, 8)
+    childs = Array{OctTreeNode{T}}(undef, 8)
 
     # fix neighbours
     @inbounds for i in 1:t.number_of_nodes_used
@@ -55,7 +55,7 @@ function compile!(ct::CompiledOctTree{T}, t::OctTree{T}) where T<:AbstractPoint3
                     break
                 end
             end
-            is(qb,qa) && continue # no neighbor found lets leave next=-1
+            (qb === qa) && continue # no neighbor found lets leave next=-1
             # qa and qb are neighbors -- fix that in the compiled tree
             ct.nodes[qb.id] = withnext(ct.nodes[qb.id], qa.id)
         end

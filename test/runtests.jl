@@ -415,7 +415,7 @@ end
 tot=0
 for i in 1:q.number_of_nodes_used
     !isfullleaf(q.nodes[i]) && continue
-    tot+=1
+    global tot+=1
 end
 @test tot == N
 
