@@ -33,4 +33,4 @@ before_install:
 #  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export GKSwstype=svg; fi
 
 script:
-  - julia --project --check-bounds=yes -e 'import Pkg; Pkg.build(); Pkg.test("Octrees"; coverage=true)'
+  - julia --project --check-bounds=yes -e 'import Pkg; Pkg.build(); Pkg.test("OctTrees"; coverage=true)'
