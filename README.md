@@ -1,9 +1,11 @@
 # OctTrees
 
 [![Build Status](https://travis-ci.org/JuliaGeometry/OctTrees.jl.svg?branch=master)](https://travis-ci.org/JuliaGeometry/OctTrees.jl)
-<!-- [![Coverage Status](https://coveralls.io/repos/JuliaGeometry/TriangleIntersect.jl/badge.svg?branch=master)](https://coveralls.io/r/JuliaGeometry/TriangleIntersect.jl?branch=master) -->
+[![Coverage Status](https://coveralls.io/repos/JuliaGeometry/OctTrees.jl/badge.svg?branch=master)](https://coveralls.io/r/JuliaGeometry/OctTrees.jl?branch=master)
 
 A Julia library for [Quadtree](https://en.wikipedia.org/wiki/Quadtree) and [Octree](https://en.wikipedia.org/wiki/Octree) functionality.
+
+**Original author**: [skariel](https://github.com/skariel)
 
 Updated to at least v0.7
 
