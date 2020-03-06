@@ -24,3 +24,7 @@ OctTrees.insert!(q, Point(0.9, 0.9, 0.9))
 
 
 ```
+
+## Similar packages
+
+[RegionTrees.jl](https://github.com/rdeits/RegionTrees.jl)
