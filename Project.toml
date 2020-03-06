@@ -1,0 +1,8 @@
+name = "OctTrees"
+uuid = "2b3b35e4-9cca-46ab-a599-123c59f271f1"
+version = "0.1.0"
+
+[deps]
+GeometricalPredicates = "fd0ad045-b25c-564e-8f9c-8ef5c5f21267"
+SharedArrays = "1a1011a3-84de-559e-8e89-a11a2f7dc383"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

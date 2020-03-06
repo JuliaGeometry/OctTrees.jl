@@ -1,7 +1,7 @@
 # specific stuff for quad trees
 
 
-type QuadTreeNode{T<:AbstractPoint2D} <: SpatialTreeNode
+mutable struct QuadTreeNode{T<:AbstractPoint2D} <: SpatialTreeNode
     id::Int64
     r::Float64
     midx::Float64
@@ -13,7 +13,7 @@ type QuadTreeNode{T<:AbstractPoint2D} <: SpatialTreeNode
     lxhy::QuadTreeNode{T}
     hxly::QuadTreeNode{T}
     hxhy::QuadTreeNode{T}
-    function QuadTreeNode(r::Number, midx::Number, midy::Number)
+    function QuadTreeNode{T}(r::Number, midx::Number, midy::Number) where T <:AbstractPoint2D
         n = new(0, r, midx, midy, true, false, T())
         n.lxly = n
         n.lxhy = n
@@ -23,30 +23,28 @@ type QuadTreeNode{T<:AbstractPoint2D} <: SpatialTreeNode
     end
 end
 
-QuadTreeNode{T<:AbstractPoint2D}(r::Number, midx::Number, midy::Number, ::Type{T}) =
-    QuadTreeNode{T}(r, midx, midy)
-QuadTreeNode{T<:AbstractPoint2D}(::Type{T}) = QuadTreeNode(0.5, 0.5, 0.5, T)
+QuadTreeNode(r::Number, midx::Number, midy::Number, ::Type{T}) where T<:AbstractPoint2D =  QuadTreeNode{T}(r, midx, midy)
+QuadTreeNode(::Type{T}) where T<:AbstractPoint2D = QuadTreeNode(0.5, 0.5, 0.5, T)
 QuadTreeNode() = QuadTreeNode(Point2D);
 
-type QuadTree{T<:AbstractPoint2D} <: SpatialTree
+mutable struct QuadTree{T<:AbstractPoint2D} <: SpatialTree
 	head::QuadTreeNode{T}
 	number_of_nodes_used::Int64
 	nodes::Array{QuadTreeNode, 1}
     faststack::Array{QuadTreeNode{T}, 1}
-    function QuadTree(r::Number, midx::Number, midy::Number, n::Int64=100000)
+    function QuadTree{T}(r::Number, midx::Number, midy::Number, n::Int64=100000) where T <:AbstractPoint2D
     	nodes = QuadTreeNode[QuadTreeNode(r, midx, midy, T) for i in 1:n]
         new(nodes[1], 1, nodes, [QuadTreeNode(T) for i in 1:10000])
     end
 end
 
-QuadTree{T<:AbstractPoint2D}(r::Number, midx::Number, midy::Number, ::Type{T};n=1000) =
-    QuadTree{T}(r, midx, midy, n)
-QuadTree{T<:AbstractPoint2D}(::Type{T};n=10000) = QuadTree(0.5, 0.5, 0.5, T; n=n)
+QuadTree(r::Number, midx::Number, midy::Number, ::Type{T};n=1000) where T<:AbstractPoint2D = QuadTree{T}(r, midx, midy, n)
+QuadTree(::Type{T};n=10000) where T <: AbstractPoint2D = QuadTree(0.5, 0.5, 0.5, T; n=n)
 QuadTree(n::Int64) = QuadTree(Point2D;n=n)
 QuadTree() = QuadTree(Point2D)
-eltype{T<:AbstractPoint2D}(::QuadTree{T}) = T
+Base.eltype(::QuadTree{T}) where T <: AbstractPoint2D = T
 
-function initnode!{T<:AbstractPoint2D}(q::QuadTreeNode{T}, r::Number, midx::Number, midy::Number)
+function initnode!(q::QuadTreeNode{T}, r::Number, midx::Number, midy::Number) where T <: AbstractPoint2D
     q.r = r
     q.midx = midx
     q.midy = midy
@@ -54,7 +52,7 @@ function initnode!{T<:AbstractPoint2D}(q::QuadTreeNode{T}, r::Number, midx::Numb
     q.is_divided = false
 end
 
-function divide!{T<:AbstractPoint2D}(h::QuadTree{T}, q::QuadTreeNode{T})
+function divide!(h::QuadTree{T}, q::QuadTreeNode{T}) where T <: AbstractPoint2D
     # make sure we have enough nodes
     if length(h.nodes) - h.number_of_nodes_used < 4
     	new_size = length(h.nodes)+(length(h.nodes) >>> 1)
@@ -71,7 +69,7 @@ function divide!{T<:AbstractPoint2D}(h::QuadTree{T}, q::QuadTreeNode{T})
     q.hxhy = h.nodes[h.number_of_nodes_used+4]
 
     # set new nodes properties (dimensions etc.)
-    const r2 = q.r/2
+    r2 = q.r/2
     initnode!(q.lxly, r2, q.midx-r2, q.midy-r2)
     initnode!(q.lxhy, r2, q.midx-r2, q.midy+r2)
     initnode!(q.hxly, r2, q.midx+r2, q.midy-r2)
@@ -82,7 +80,7 @@ function divide!{T<:AbstractPoint2D}(h::QuadTree{T}, q::QuadTreeNode{T})
     q.is_divided = true
     if !q.is_empty
         # move point in parent node to child node
-        const sq = _getsubnode(q, q.point)
+        sq = _getsubnode(q, q.point)
         sq.is_empty = false
         q.is_empty = true
         sq.point, q.point = q.point, sq.point
@@ -90,9 +88,9 @@ function divide!{T<:AbstractPoint2D}(h::QuadTree{T}, q::QuadTreeNode{T})
     q
 end
 
-function _getsubnode{T<:AbstractPoint2D}(q::QuadTreeNode{T}, point::T)
-    const x=getx(point)
-    const y=gety(point)
+function _getsubnode(q::QuadTreeNode{T}, point::T) where T <: AbstractPoint2D
+    x=getx(point)
+    y=gety(point)
     if x<q.midx
         y<q.midy && return q.lxly
         return q.lxhy
@@ -101,7 +99,7 @@ function _getsubnode{T<:AbstractPoint2D}(q::QuadTreeNode{T}, point::T)
     return q.hxhy
 end
 
-function map{T<:AbstractPoint2D}(t::QuadTree{T}, cond_data)
+function map(t::QuadTree{T}, cond_data) where T <: AbstractPoint2D
     curr_stack_ix = 1
     t.faststack[1] = t.head
     @inbounds while curr_stack_ix > 0

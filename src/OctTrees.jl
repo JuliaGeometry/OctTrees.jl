@@ -1,6 +1,7 @@
 module OctTrees
 
 using GeometricalPredicates
+using SharedArrays
 
 export
     OctTree,
@@ -37,11 +38,11 @@ end
 
 # General stuff good for both Quad and Oct trees
 
-abstract SpatialTree
-abstract SpatialTreeNode
+abstract type SpatialTree end
+abstract type SpatialTreeNode end
 
-immutable Modify end
-immutable No_Cond_Data end
+struct Modify end
+struct No_Cond_Data end
 
 isleaf(q::SpatialTreeNode) = !q.is_divided
 isemptyleaf(q::SpatialTreeNode) = !q.is_divided && q.is_empty
@@ -84,7 +85,7 @@ function insert!(h::SpatialTree, point::AbstractPoint, ::Type{Modify})
         q = _getsubnode(q, point)
     end
     while !q.is_empty
-        const friend = q.point
+        friend = q.point
         divide!(h, q)
         modify(q, friend)
         modify(q, point)
@@ -102,7 +103,7 @@ function insert!(h::SpatialTree, point::AbstractPoint, additional_data)
         q = _getsubnode(q, point)
     end
     while !q.is_empty
-        const friend = q.point
+        friend = q.point
         divide!(h, q)
         modify(q, friend, additional_data)
         modify(q, point, additional_data)
@@ -113,7 +114,7 @@ function insert!(h::SpatialTree, point::AbstractPoint, additional_data)
     q
 end
 
-function insert!{T<:AbstractPoint}(h::SpatialTree, points::AbstractArray{T,1}, ::Type{Modify})
+function insert!(h::SpatialTree, points::AbstractArray{T,1}, ::Type{Modify}) where T <: AbstractPoint
     #hilbertsort!(points)
     for p in points
         insert!(h, p, Modify)
@@ -126,9 +127,7 @@ include("_octtrees.jl")
 include("_compiled_octtrees.jl")
 include("_quadtrees.jl")
 
-map{T<:AbstractPoint2D}(h::QuadTree{T}) =
-    map(h, No_Cond_Data)
-map{T<:AbstractPoint3D}(h::OctTree{T}) =
-    map(h, No_Cond_Data)
+map(h::QuadTree{T}) where T<:AbstractPoint2D = map(h, No_Cond_Data)
+map(h::OctTree{T}) where T<:AbstractPoint3D = map(h, No_Cond_Data)
 
 end # module
